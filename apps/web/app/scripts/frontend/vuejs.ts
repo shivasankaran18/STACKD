@@ -38,12 +38,4 @@ export async function createVueJS(config: any, projectDir: string) {
         cwd: join(projectDir, 'frontend'),
         stdio: 'inherit'
     })
-
-
-    // if (config.frontend === 'vue-ts') {
-    //     await execSync('npm install -D @types/node', {
-    //         cwd: join(projectDir, 'frontend'),
-    //         stdio: 'inherit'
-    //     })
-    // }
 }
