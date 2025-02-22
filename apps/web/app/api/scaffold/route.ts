@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { execSync } from 'node:child_process'
 import { createReactTS } from '@/app/scripts/frontend/reactts'
 import { createReactJS } from '@/app/scripts/frontend/reactjs'
 import { createExpressTS } from '@/app/scripts/backend/expressts'
 import { createExpressJS } from '@/app/scripts/backend/expressjs'
+import { createVueJS } from '@/app/scripts/frontend/vuejs'
+import { createVueTS } from '@/app/scripts/frontend/vuets'
+import { jwtAuth } from '@/app/scripts/Auth/jwt'
 
 export async function POST(req: NextRequest) {
     try {
@@ -44,81 +46,6 @@ export async function POST(req: NextRequest) {
                 throw new Error(`Unsupported backend: ${config.backend}`)
         }
 
-        // Create root package.json
-        const rootPackageJson = {
-            name: config.projectName,
-            version: '1.0.0',
-            private: true,
-            scripts: {
-                "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
-                "dev:frontend": "cd frontend && npm run dev",
-                "dev:backend": "cd backend && npm run dev",
-                "build": "concurrently \"cd frontend && npm run build\" \"cd backend && npm run build\"",
-                "install:all": "concurrently \"cd frontend && npm install\" \"cd backend && npm install\"",
-                "start": "concurrently \"cd frontend && npm run preview\" \"cd backend && npm start\""
-            },
-            devDependencies: {
-                "concurrently": "^8.2.0"
-            }
-        }
-
-        await writeFile(
-            join(projectDir, 'package.json'),
-            JSON.stringify(rootPackageJson, null, 2)
-        )
-
-        // Create README.md
-        const readme = `
-# ${config.projectName}
-
-Full-stack application with React frontend and Express backend.
-
-## Development
-
-1. Install dependencies:
-   \`\`\`bash
-   npm install
-   npm run install:all
-   \`\`\`
-
-2. Start development servers:
-   \`\`\`bash
-   npm run dev
-   \`\`\`
-
-   - Frontend: http://localhost:${config.frontendPort}
-   - Backend: http://localhost:${config.backendPort}
-
-## Production
-
-1. Build the application:
-   \`\`\`bash
-   npm run build
-   \`\`\`
-
-2. Start production servers:
-   \`\`\`bash
-   npm start
-   \`\`\`
-
-## Project Structure
-
-\`\`\`
-${config.projectName}/
-├── frontend/          # React frontend (Vite)
-├── backend/           # Express backend
-│   ├── src/          # TypeScript source files
-│   └── dist/         # Compiled JavaScript
-└── package.json      # Root package.json for project management
-\`\`\`
-`
-
-        await writeFile(
-            join(projectDir, 'README.md'),
-            readme.trim()
-        )
-
-        // Create .gitignore
         const gitignore = `
 # Dependencies
 node_modules
@@ -152,20 +79,11 @@ yarn-error.log*
 Thumbs.db
 `
 
-        await writeFile(
-            join(projectDir, '.gitignore'),
-            gitignore.trim()
-        )
-
-        // Install dependencies
-        console.log('Installing dependencies...')
-        execSync('npm install', { cwd: projectDir, stdio: 'inherit' })
-        execSync('npm run install:all', { cwd: projectDir, stdio: 'inherit' })
-
-        // Start the servers
-        console.log('Starting servers...')
-        execSync('npm run dev', { cwd: projectDir, stdio: 'inherit' })
-
+        // await writeFile(
+        //     join(projectDir, '.gitignore'),
+        //     gitignore.trim()
+        // )
+        await jwtAuth(config,projectDir);
         return NextResponse.json({
             success: true,
             projectPath: projectDir,

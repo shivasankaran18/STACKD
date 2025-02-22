@@ -1,5 +1,4 @@
 'use client'
-
 import { useState } from 'react'
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -173,8 +172,8 @@ export default function ScaffoldPage() {
             description: "Select your ORM",
             icon: <Database className="w-5 h-5" />,
             options: config.database === 'postgresql' ? [
-                { id: 'prisma', name: 'Prisma', description: 'Prisma ORM', features: ['Type-safe', 'Migrations'] },
-                { id: 'hastle', name: 'Hastle', description: 'Hastle ORM', features: ['Lightweight', 'Flexible'] }
+                { id: 'risma', name: 'Prisma', description: 'Prisma ORM', features: ['Type-safe', 'Migrations'] },
+                { id: 'drizzle', name: 'Drizzle', description: 'Drizzle ORM', features: ['Lightweight', 'Flexible'] }
             ] : config.database === 'mongodb' ? [
                 { id: 'mongoose', name: 'Mongoose', description: 'Mongoose ORM', features: ['Schemas', 'Validation'] }
             ] : []

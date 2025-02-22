@@ -90,9 +90,5 @@ app.listen(port, () => {
         backendIndex.trim()
     )
 
-    // Create .env file with DATABASE_URL
-    const envContent = `DATABASE_URL=${config.dbUrl}\n`;
-    writeFileSync(join(projectDir, 'backend', '.env'), envContent);
-
     await execSync("npm install",{cwd : projectDir + '/backend',stdio : "inherit"});
 }
