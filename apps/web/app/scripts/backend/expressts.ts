@@ -1,7 +1,6 @@
 import { execSync } from 'node:child_process'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { writeFileSync } from 'fs'
 
 export async function createExpressTS(config: any, projectDir: string) {
     await mkdir(join(projectDir, 'backend'))
