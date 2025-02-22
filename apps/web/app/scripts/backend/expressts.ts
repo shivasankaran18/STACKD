@@ -2,9 +2,10 @@ import { execSync } from 'node:child_process'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-export async function createExpressTS(config: any, projectDir: string) {
-    await mkdir(join(projectDir, 'backend'))
-    
+export async function createExpressTS(config: any, projectDir: string,emitLog: (log: string) => void) {
+    emitLog('Creating ExpressTS project...');
+    await mkdir(join(projectDir, 'backend'));
+    emitLog('Writing package.json...');
     const backendPackageJson = {
         name: "backend",
         version: "1.0.0",
@@ -31,7 +32,7 @@ export async function createExpressTS(config: any, projectDir: string) {
         join(projectDir, 'backend', 'package.json'),
         JSON.stringify(backendPackageJson, null, 2)
     )
-
+    emitLog('Writing tsconfig.json...');
     const tsConfig = {
         compilerOptions: {
             "target": "ES2020",
@@ -54,9 +55,9 @@ export async function createExpressTS(config: any, projectDir: string) {
         join(projectDir, 'backend', 'tsconfig.json'),
         JSON.stringify(tsConfig, null, 2)
     )
-
+    emitLog('Creating src directory...');
     await mkdir(join(projectDir, 'backend', 'src'))
-
+    emitLog('Writing index.ts...');
     const backendIndex = `
 import express from 'express';
 import cors from 'cors';
@@ -83,11 +84,12 @@ app.get('/api/health', (req, res) => {
 app.listen(port, () => {
     console.log(\`Server running on port \${port}\`);
 });`
-
+    emitLog('Writing index.ts...');     
     await writeFile(
         join(projectDir, 'backend', 'src', 'index.ts'),
         backendIndex.trim()
     )
-
+    emitLog('Installing dependencies...');
     await execSync("npm install",{cwd : projectDir + '/backend',stdio : "inherit"});
+    emitLog('✅ ExpressTS project created successfully!');
 }

@@ -3,7 +3,8 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { writeFileSync } from 'fs'
 
-export async function createExpressJS(config: any, projectDir: string) {
+export async function createExpressJS(config: any, projectDir: string,emitLog: (log: string) => void) {
+    emitLog('Creating ExpressJS project...');
     await mkdir(join(projectDir, 'backend'))
     const backendPackageJson = {
         name: "backend",
@@ -22,11 +23,13 @@ export async function createExpressJS(config: any, projectDir: string) {
         }
     }
 
+    emitLog('Writing package.json...');
     await writeFile(
         join(projectDir, 'backend', 'package.json'),
         JSON.stringify(backendPackageJson, null, 2)
     )
 
+    emitLog('Creating src directory...');
     await mkdir(join(projectDir, 'backend', 'src'))
 
     const backendIndex = `
@@ -56,10 +59,14 @@ app.listen(port, () => {
     console.log(\`Server running on port \${port}\`);
 });`
 
+    emitLog('Writing index.js...');
     await writeFile(
         join(projectDir, 'backend', 'src', 'index.js'),
         backendIndex.trim()
     )
-
+    
+    emitLog('Installing dependencies...');
     await execSync("npm install",{cwd : projectDir + '/backend',stdio : "inherit"});
+
+    emitLog('✅ ExpressJS project created successfully!');
 } 
