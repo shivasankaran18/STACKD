@@ -2,19 +2,23 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { execSync } from 'node:child_process'
 
-export async function createReactJS(config: any, projectDir: string) {
-    await execSync(`npm create vite@latest frontend -- --template react`, {
+export async function createVueJS(config: any, projectDir: string) {
+ 
+
+    
+    await execSync(`npm create vite@latest frontend -- --template vue`, {
         cwd: projectDir,
         stdio: 'inherit'
     })
-    console.log("Intalling the dependcies for the frontend");
-    await execSync("npm install",{cwd:projectDir + "/frontend",stdio:"inherit"});
+
+    console.log(projectDir)
+    console.log(config)
     const viteConfig = `
     import { defineConfig } from 'vite'
-    import react from '@vitejs/plugin-react'
+    import vue from '@vitejs/plugin-vue'
     
     export default defineConfig({
-      plugins: [react()],
+      plugins: [vue()],
       server: {
         port: ${config.frontendPort},
         proxy: {
@@ -27,7 +31,11 @@ export async function createReactJS(config: any, projectDir: string) {
     })`
 
     await writeFile(
-        join(projectDir, 'frontend', 'vite.config.js'),
+        join(projectDir, 'frontend', `vite.config.js`),
         viteConfig.trim()
     )
-} 
+    await execSync('npm install vue-router@4 pinia@2', {
+        cwd: join(projectDir, 'frontend'),
+        stdio: 'inherit'
+    })
+}

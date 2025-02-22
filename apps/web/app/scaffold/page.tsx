@@ -1,6 +1,10 @@
 'use client'
 
+
 import { useState, useEffect } from 'react'
+
+import { useState } from 'react'
+
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Layout, Server, Database, FolderOpen } from "lucide-react"
@@ -122,11 +126,25 @@ export default function ScaffoldPage() {
                     description: 'React with JavaScript template',
                     features: ['Vite', 'JavaScript', 'React Router', 'TailwindCSS']
                 },
+
                 { 
                     id: 'django',
                     name: 'Django Templates',
                     description: 'Django framework',
                     features: ['Full-stack', 'Django ORM', 'Django Admin']
+
+                {
+                    id: 'vue-ts',
+                    name: 'Vue + TypeScript',
+                    description: 'Vue 3 with TypeScript template',
+                    features: ['Vite', 'TypeScript', 'Vue Router', 'Pinia', 'TailwindCSS']
+                },
+                {
+                    id: 'vue',
+                    name: 'Vue (JavaScript)',
+                    description: 'Vue 3 with JavaScript template',
+                    features: ['Vite', 'JavaScript', 'Vue Router', 'Pinia', 'TailwindCSS']
+
                 }
             ]
         },
@@ -179,8 +197,8 @@ export default function ScaffoldPage() {
             description: "Select your ORM",
             icon: <Database className="w-5 h-5" />,
             options: config.database === 'postgresql' ? [
-                { id: 'prisma', name: 'Prisma', description: 'Prisma ORM', features: ['Type-safe', 'Migrations'] },
-                { id: 'hastle', name: 'Hastle', description: 'Hastle ORM', features: ['Lightweight', 'Flexible'] }
+                { id: 'risma', name: 'Prisma', description: 'Prisma ORM', features: ['Type-safe', 'Migrations'] },
+                { id: 'drizzle', name: 'Drizzle', description: 'Drizzle ORM', features: ['Lightweight', 'Flexible'] }
             ] : config.database === 'mongodb' ? [
                 { id: 'mongoose', name: 'Mongoose', description: 'Mongoose ORM', features: ['Schemas', 'Validation'] }
             ] : []
