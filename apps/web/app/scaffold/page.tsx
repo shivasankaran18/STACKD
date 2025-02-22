@@ -17,6 +17,7 @@ interface ProjectConfig {
     frontend: string | null;
     backend: string | null;
     database: string | null;
+    authentication:string|null;
 }
 
 export default function ScaffoldPage() {
@@ -28,7 +29,8 @@ export default function ScaffoldPage() {
         backendPort: 3001,
         frontend: null,
         backend: null,
-        database: null
+        database: null,
+        authentication:null
     })
 
     const steps = [
@@ -147,6 +149,19 @@ export default function ScaffoldPage() {
                     name: 'MongoDB',
                     description: 'NoSQL document database',
                     features: ['Mongoose', 'Schemas', 'TypeScript']
+                }
+            ]
+        },
+        {
+            title: "authentication",
+            description: "Pick your authentication",
+            icon: <Database className="w-5 h-5" />,
+            options: [
+                {
+                    id: 'JWT',
+                    name: 'JWT',
+                    description: 'open source database',
+                    features: ['Secure']
                 }
             ]
         }

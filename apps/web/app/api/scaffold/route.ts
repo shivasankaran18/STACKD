@@ -6,6 +6,7 @@ import { createReactTS } from '@/app/scripts/frontend/reactts'
 import { createReactJS } from '@/app/scripts/frontend/reactjs'
 import { createExpressTS } from '@/app/scripts/backend/expressts'
 import { createExpressJS } from '@/app/scripts/backend/expressjs'
+import { jwtAuth } from '@/app/scripts/Auth/jwt'
 
 export async function POST(req: NextRequest) {
     try {
@@ -37,8 +38,8 @@ export async function POST(req: NextRequest) {
             default:
                 throw new Error(`Unsupported backend: ${config.backend}`)
         }
-
-        // Create root package.json
+        console.log("Running authentication file");
+            // Create root package.json
         const rootPackageJson = {
             name: config.projectName,
             version: '1.0.0',
@@ -155,6 +156,7 @@ Thumbs.db
         console.log('Installing dependencies...')
         execSync('npm install', { cwd: projectDir, stdio: 'inherit' })
         execSync('npm run install:all', { cwd: projectDir, stdio: 'inherit' })
+
 
         // Start the servers
         console.log('Starting servers...')
