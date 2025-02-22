@@ -5,14 +5,20 @@ import { createReactTS } from '@/app/scripts/frontend/reactts'
 import { createReactJS } from '@/app/scripts/frontend/reactjs'
 import { createExpressTS } from '@/app/scripts/backend/expressts'
 import { createExpressJS } from '@/app/scripts/backend/expressjs'
+
+import { setupPrisma } from '@/app/scripts/orms/prismaSetup'
+import { installDjangoDependencies } from '@/app/scripts/backend/django'
+
 import { createVueJS } from '@/app/scripts/frontend/vuejs'
 import { createVueTS } from '@/app/scripts/frontend/vuets'
 import { jwtAuth } from '@/app/scripts/Auth/jwt'
+
 import { setupNextAuth } from '@/app/scripts/Auth/nextAuth'
 import { setupPassport } from '@/app/scripts/Auth/passport'
 import { setupPrisma } from '@/app/scripts/orms/prismaSetup'
 import { setupDrizzle } from '@/app/scripts/orms/drizzleSetup'
 import { setupMongoose } from '@/app/scripts/orms/mongoSetup'
+
 export async function POST(req: NextRequest) {
     try {
         const config = await req.json()
@@ -31,10 +37,18 @@ export async function POST(req: NextRequest) {
             case 'react':
                 await createReactJS(config, projectDir,emitLog)
                 break
+
+            case 'django':
+                await installDjangoDependencies(projectDir);
+
             case 'vue':
                 await createVueJS(config, projectDir,emitLog)
             case 'vue-ts':
+
                 await createVueTS(config, projectDir,emitLog)
+
+                await createVueTS(config, projectDir)
+
                 break
             default:
                 throw new Error(`Unsupported frontend: ${config.frontend}`)
@@ -47,6 +61,9 @@ export async function POST(req: NextRequest) {
             case 'express':
                 console.log("Creating the backend")
                 await createExpressJS(config, projectDir,emitLog)
+                break
+            case 'django':
+                await installDjangoDependencies(projectDir);
                 break
             default:
                 throw new Error(`Unsupported backend: ${config.backend}`)

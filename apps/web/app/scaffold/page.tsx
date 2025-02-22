@@ -1,5 +1,10 @@
 'use client'
+
+
+import { useState, useEffect } from 'react'
+
 import { useState } from 'react'
+
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Layout, Server, Database, FolderOpen } from "lucide-react"
@@ -33,8 +38,14 @@ export default function ScaffoldPage() {
         database: null,
         orm: null,
         auth: null,
-        dbUrl: ''
+        dbUrl: '',
     })
+
+    const uiFrameworkOptions = [
+        { value: 'tailwind', label: 'Tailwind CSS' },
+        { value: 'shadcn', label: 'shadcn/ui (includes Tailwind)' },
+        { value: 'none', label: 'No UI Framework' },
+    ];
 
     const steps = [
         {
@@ -115,6 +126,13 @@ export default function ScaffoldPage() {
                     description: 'React with JavaScript template',
                     features: ['Vite', 'JavaScript', 'React Router', 'TailwindCSS']
                 },
+
+                { 
+                    id: 'django',
+                    name: 'Django Templates',
+                    description: 'Django framework',
+                    features: ['Full-stack', 'Django ORM', 'Django Admin']
+
                 {
                     id: 'vue-ts',
                     name: 'Vue + TypeScript',
@@ -126,6 +144,7 @@ export default function ScaffoldPage() {
                     name: 'Vue (JavaScript)',
                     description: 'Vue 3 with JavaScript template',
                     features: ['Vite', 'JavaScript', 'Vue Router', 'Pinia', 'TailwindCSS']
+
                 }
             ]
         },
@@ -145,6 +164,12 @@ export default function ScaffoldPage() {
                     name: 'Express (JavaScript)',
                     description: 'Express with JavaScript setup',
                     features: ['JavaScript', 'API Routes', 'Middleware', 'CORS']
+                },
+                {
+                    id: 'django',
+                    name: 'Django',
+                    description: 'Django framework',
+                    features: ['Full-stack', 'Django ORM', 'Django Admin']
                 }
             ]
         },
@@ -278,6 +303,7 @@ export default function ScaffoldPage() {
             toast.error('Failed to generate project')
         }
     }
+
 
     return (
         <div className="min-h-screen p-8 bg-background">
