@@ -8,7 +8,8 @@ export async function createReactJS(config: any, projectDir: string) {
         cwd: projectDir,
         stdio: 'inherit'
     })
-
+    console.log("Intalling the dependcies for the frontend");
+    await execSync("npm install",{cwd:projectDir + "/frontend",stdio:"inherit"});
     const viteConfig = `
     import { defineConfig } from 'vite'
     import react from '@vitejs/plugin-react'

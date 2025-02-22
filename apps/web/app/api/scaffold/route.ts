@@ -6,16 +6,16 @@ import { createReactTS } from '@/app/scripts/frontend/reactts'
 import { createReactJS } from '@/app/scripts/frontend/reactjs'
 import { createExpressTS } from '@/app/scripts/backend/expressts'
 import { createExpressJS } from '@/app/scripts/backend/expressjs'
-import { jwtAuth } from '@/app/scripts/Auth/jwt'
 
 export async function POST(req: NextRequest) {
     try {
         const config = await req.json()
+        console.log(config)
         const projectDir = join(config.projectPath, config.projectName)
 
         await mkdir(projectDir, { recursive: true })
+    
         
-        // Select and create frontend based on config
         switch(config.frontend) {
             case 'react-ts':
                 await createReactTS(config, projectDir)
@@ -23,23 +23,28 @@ export async function POST(req: NextRequest) {
             case 'react':
                 await createReactJS(config, projectDir)
                 break
+            case 'vue':
+                await createVueJS(config, projectDir)
+            case 'vue-ts':
+                await createVueTS(config, projectDir)
+                break
             default:
                 throw new Error(`Unsupported frontend: ${config.frontend}`)
         }
 
-        // Select and create backend based on config
         switch(config.backend) {
             case 'express-ts':
                 await createExpressTS(config, projectDir)
                 break
             case 'express':
+                console.log("Creating the backend")
                 await createExpressJS(config, projectDir)
                 break
             default:
                 throw new Error(`Unsupported backend: ${config.backend}`)
         }
-        console.log("Running authentication file");
-            // Create root package.json
+
+        // Create root package.json
         const rootPackageJson = {
             name: config.projectName,
             version: '1.0.0',
@@ -156,7 +161,6 @@ Thumbs.db
         console.log('Installing dependencies...')
         execSync('npm install', { cwd: projectDir, stdio: 'inherit' })
         execSync('npm run install:all', { cwd: projectDir, stdio: 'inherit' })
-
 
         // Start the servers
         console.log('Starting servers...')
