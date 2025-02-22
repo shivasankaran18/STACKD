@@ -115,6 +115,18 @@ export default function ScaffoldPage() {
                     name: 'React (JavaScript)',
                     description: 'React with JavaScript template',
                     features: ['Vite', 'JavaScript', 'React Router', 'TailwindCSS']
+                },
+                {
+                    id: 'vue-ts',
+                    name: 'Vue + TypeScript',
+                    description: 'Vue 3 with TypeScript template',
+                    features: ['Vite', 'TypeScript', 'Vue Router', 'Pinia', 'TailwindCSS']
+                },
+                {
+                    id: 'vue',
+                    name: 'Vue (JavaScript)',
+                    description: 'Vue 3 with JavaScript template',
+                    features: ['Vite', 'JavaScript', 'Vue Router', 'Pinia', 'TailwindCSS']
                 }
             ]
         },

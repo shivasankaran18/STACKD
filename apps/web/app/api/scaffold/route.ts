@@ -7,6 +7,8 @@ import { createReactJS } from '@/app/scripts/frontend/reactjs'
 import { createExpressTS } from '@/app/scripts/backend/expressts'
 import { createExpressJS } from '@/app/scripts/backend/expressjs'
 import { setupPrisma } from '@/app/scripts/orms/prismaSetup'
+import { createVueJS } from '@/app/scripts/frontend/vuejs'
+import { createVueTS } from '@/app/scripts/frontend/vuets'
 
 export async function POST(req: NextRequest) {
     try {
@@ -16,6 +18,7 @@ export async function POST(req: NextRequest) {
 
         await mkdir(projectDir, { recursive: true })
     
+        
         switch(config.frontend) {
             case 'react-ts':
                 await createReactTS(config, projectDir)
@@ -23,11 +26,15 @@ export async function POST(req: NextRequest) {
             case 'react':
                 await createReactJS(config, projectDir)
                 break
+            case 'vue':
+                await createVueJS(config, projectDir)
+            case 'vue-ts':
+                await createVueTS(config, projectDir)
+                break
             default:
                 throw new Error(`Unsupported frontend: ${config.frontend}`)
         }
 
-        // Select and create backend based on config
         switch(config.backend) {
             case 'express-ts':
                 await createExpressTS(config, projectDir)
@@ -39,6 +46,28 @@ export async function POST(req: NextRequest) {
             default:
                 throw new Error(`Unsupported backend: ${config.backend}`)
         }
+
+        const rootPackageJson = {
+            name: config.projectName,
+            version: '1.0.0',
+            private: true,
+            scripts: {
+                "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+                "dev:frontend": "cd frontend && npm run dev",
+                "dev:backend": "cd backend && npm run dev",
+                "build": "concurrently \"cd frontend && npm run build\" \"cd backend && npm run build\"",
+                "install:all": "concurrently \"cd frontend && npm install\" \"cd backend && npm install\"",
+                "start": "concurrently \"cd frontend && npm run preview\" \"cd backend && npm start\""
+            },
+            devDependencies: {
+                "concurrently": "^8.2.0"
+            }
+        }
+
+        await writeFile(
+            join(projectDir, 'package.json'),
+            JSON.stringify(rootPackageJson, null, 2)
+        )
 
         // Create README.md
         const readme = `
