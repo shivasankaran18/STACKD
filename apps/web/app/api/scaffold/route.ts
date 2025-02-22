@@ -5,9 +5,14 @@ import { createReactTS } from '@/app/scripts/frontend/reactts'
 import { createReactJS } from '@/app/scripts/frontend/reactjs'
 import { createExpressTS } from '@/app/scripts/backend/expressts'
 import { createExpressJS } from '@/app/scripts/backend/expressjs'
+
+import { setupPrisma } from '@/app/scripts/orms/prismaSetup'
+import { installDjangoDependencies } from '@/app/scripts/backend/django'
+
 import { createVueJS } from '@/app/scripts/frontend/vuejs'
 import { createVueTS } from '@/app/scripts/frontend/vuets'
 import { jwtAuth } from '@/app/scripts/Auth/jwt'
+
 
 export async function POST(req: NextRequest) {
     try {
@@ -25,10 +30,15 @@ export async function POST(req: NextRequest) {
             case 'react':
                 await createReactJS(config, projectDir)
                 break
+
+            case 'django':
+                await installDjangoDependencies(projectDir);
+
             case 'vue':
                 await createVueJS(config, projectDir)
             case 'vue-ts':
                 await createVueTS(config, projectDir)
+
                 break
             default:
                 throw new Error(`Unsupported frontend: ${config.frontend}`)
@@ -41,6 +51,9 @@ export async function POST(req: NextRequest) {
             case 'express':
                 console.log("Creating the backend")
                 await createExpressJS(config, projectDir)
+                break
+            case 'django':
+                await installDjangoDependencies(projectDir);
                 break
             default:
                 throw new Error(`Unsupported backend: ${config.backend}`)
