@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { Suspense, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -8,7 +8,17 @@ import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 
-export default function ConfigurePage() {
+export default function ConfigurePage()
+{
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <Comp />
+        </Suspense>
+      
+    )
+}
+
+ function Comp() {
     const searchParams = useSearchParams()
     const initialTech = {
         frontend: searchParams.get('frontend'),
