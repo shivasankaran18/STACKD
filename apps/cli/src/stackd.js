@@ -1,46 +1,101 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
+
+import { program } from 'commander';
+import inquirer from 'inquirer';
 import { createProject } from './commands/create.js';
 
-const program = new Command();
-
-// Define package version manually since we're having JSON import issues
-const VERSION = '1.0.0';
-
 program
-  .name('stackd')
-  .description('CLI to scaffold full-stack applications')
-  .version(VERSION);
-
-program
-  .command('create')
+  .command('new <projectName>')
   .description('Create a new full-stack project')
-  .argument('<project-name>', 'Name of the project')
-  .option('-f, --frontend <framework>', 'Frontend framework (react, react-ts, vue, vue-ts)', 'react-ts')
-  .option('-b, --backend <framework>', 'Backend framework (express, express-ts)', 'express-ts')
-  .option('--frontend-port <port>', 'Frontend port number', '3000')
-  .option('--backend-port <port>', 'Backend port number', '5000')
-  .option('--db-url <url>', 'Database URL for Prisma')
-  .option('--auth', 'Add JWT authentication', false)
-  .action(async (projectName, options) => {
-    try {
-      const config = {
-        projectName,
-        projectPath: process.cwd(),
-        frontendPort: options.frontendPort,
-        backendPort: options.backendPort,
-        dbUrl: options.dbUrl,
-        frontend: options.frontend,
-        backend: options.backend,
-        auth: options.auth
-      };
+  .action(async (projectName) => {
+    const answers = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'projectPath',
+        message: 'Where do you want to create the project?',
+        default: process.cwd(),
+      },
+      {
+        type: 'number',
+        name: 'frontendPort',
+        message: 'Enter frontend port:',
+        default: 3000,
+      },
+      {
+        type: 'number',
+        name: 'backendPort',
+        message: 'Enter backend port:',
+        default: 3001,
+      },
+      {
+        type: 'list',
+        name: 'frontend',
+        message: 'Choose a frontend framework (optional):',
+        choices: ['React + TypeScript', 'React (JavaScript)', 'Vue + TypeScript', 'Vue (JavaScript)', 'Django Templates', 'None'],
+        default: 'None',
+      },
+      {
+        type: 'list',
+        name: 'backend',
+        message: 'Choose a backend framework:',
+        choices: (answers) => {
+          if (answers.frontend === 'Django Templates') {
+            return ['Django'];
+          }
+          return ['Express + TypeScript', 'Express (JavaScript)', 'Django','None'];
+        },
+        default: 'Express + TypeScript',
+      },
+      {
+        type: 'list',
+        name: 'database',
+        message: 'Choose a database:',
+        choices: ['PostgreSQL', 'MongoDB', 'None'],
+      },
+      {
+        type: 'list',
+        name: 'orm',
+        message: 'Choose an ORM:',
+        choices: (answers) => {
+          return answers.database === 'PostgreSQL'
+            ? ['Prisma', 'Drizzle','None']
+            : ['Mongoose','None']; // Only Mongoose for MongoDB
+        },
+      },
+      {
+        type: 'list',
+        name: 'auth',
+        message: 'Choose an authentication method (optional):',
+        choices: ['JWT', 'NextAuth', 'Passport', 'None'],
+        default: 'None',
+      },
+      {
+        type: 'input',
+        name: 'dbUrl',
+        message: 'Enter database connection URL:',
+      },
+    ]);
 
-      await createProject(projectName, options);
-    } catch (error) {
-      console.error('Error:', error);
+    // Adjust logic based on selections
+    if (answers.frontend === 'Django Templates') {
+      answers.backend = 'Django'; // Enforce Django backend
+    }
+    if (answers.backend === 'Django') {
+      answers.frontend = 'Django Templates'; // Enforce Django frontend
+    }
+
+    if (answers.database === 'MongoDB' && answers.orm !== 'Mongoose') {
+      console.error("❌ Error: MongoDB supports only Mongoose ORM.");
       process.exit(1);
     }
+    if (answers.database === 'PostgreSQL' && !['Prisma', 'Drizzle'].includes(answers.orm)) {
+      console.error("❌ Error: PostgreSQL supports only Prisma or Drizzle ORM.");
+      process.exit(1);
+    }
+
+    console.log("\n📦 Creating your project...");
+    await createProject(projectName, answers);
   });
 
 program.parse(process.argv);

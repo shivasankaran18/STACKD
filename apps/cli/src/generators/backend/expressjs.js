@@ -66,6 +66,7 @@ app.listen(port, () => {
     console.log("Installing backend dependencies...");
     await execSync("npm install", {
         cwd: join(projectDir, 'backend'),
-        stdio: 'inherit'
+        stdio: 'inherit',
+        shell: true
     });
 }
