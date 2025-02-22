@@ -7,12 +7,14 @@ import { createExpressTS } from '@/app/scripts/backend/expressts'
 import { createExpressJS } from '@/app/scripts/backend/expressjs'
 
 import { setupPrisma } from '@/app/scripts/orms/prismaSetup'
-import { installDjangoDependencies } from '@/app/scripts/backend/django'
 
 import { createVueJS } from '@/app/scripts/frontend/vuejs'
 import { createVueTS } from '@/app/scripts/frontend/vuets'
-import { jwtAuth } from '@/app/scripts/Auth/jwt'
+import { jwtAuthts , jwtAuthdjango} from '@/app/scripts/Auth/jwt'
 
+import path from 'path'
+import fs from 'fs/promises'
+import { installDjangoDependencies } from '@/app/scripts/backend/django'
 
 export async function POST(req: NextRequest) {
     try {
@@ -92,11 +94,16 @@ yarn-error.log*
 Thumbs.db
 `
 
-        // await writeFile(
-        //     join(projectDir, '.gitignore'),
-        //     gitignore.trim()
-        // )
-        await jwtAuth(config,projectDir);
+        switch (config.backend) {
+            case 'express-ts':
+                await jwtAuthts(config, projectDir);
+                break;
+            case 'django':
+                await jwtAuthdjango(config, projectDir);
+                break;
+            default:
+                break;
+        }
         return NextResponse.json({
             success: true,
             projectPath: projectDir,
@@ -121,3 +128,53 @@ Thumbs.db
         )
     }
 }
+
+async function configureDjangoFiles(projectPath: string) {
+
+    const settingsPath = path.join(projectPath, 'core', 'settings.py');
+    const urlsPath = path.join(projectPath, 'core', 'urls.py');
+    
+    try {
+
+        let settingsContent = await fs.readFile(settingsPath, 'utf8');
+        const restFrameworkSettings = `
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
+`;
+        const installedAppsIndex = settingsContent.indexOf('INSTALLED_APPS');
+        const insertPosition = settingsContent.indexOf(']', installedAppsIndex) + 1;
+        settingsContent = 
+            settingsContent.slice(0, insertPosition) + 
+            restFrameworkSettings + 
+            settingsContent.slice(insertPosition);
+        
+        await fs.writeFile(settingsPath, settingsContent, 'utf8');
+
+        let urlsContent = await fs.readFile(urlsPath, 'utf8');
+        const newUrlsContent = `from django.contrib import admin
+from django.urls import path, include
+from rest_framework_simplejwt import views as jwt_views
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/token/', 
+         jwt_views.TokenObtainPairView.as_view(), 
+         name='token_obtain_pair'),
+    path('api/token/refresh/', 
+         jwt_views.TokenRefreshView.as_view(), 
+         name='token_refresh'),
+    path('', include('main.urls')),
+]
+`;
+        await fs.writeFile(urlsPath, newUrlsContent, 'utf8');
+
+    } catch (error) {
+        console.error('Error configuring Django files:', error);
+        throw error;
+    }
+}
+

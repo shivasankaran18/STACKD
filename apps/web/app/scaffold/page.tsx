@@ -1,8 +1,6 @@
 'use client'
 
 
-import { useState, useEffect } from 'react'
-
 import { useState } from 'react'
 
 import { Card } from "@/components/ui/card"
@@ -132,7 +130,7 @@ export default function ScaffoldPage() {
                     name: 'Django Templates',
                     description: 'Django framework',
                     features: ['Full-stack', 'Django ORM', 'Django Admin']
-
+                },
                 {
                     id: 'vue-ts',
                     name: 'Vue + TypeScript',
@@ -144,7 +142,7 @@ export default function ScaffoldPage() {
                     name: 'Vue (JavaScript)',
                     description: 'Vue 3 with JavaScript template',
                     features: ['Vite', 'JavaScript', 'Vue Router', 'Pinia', 'TailwindCSS']
-
+                            
                 }
             ]
         },

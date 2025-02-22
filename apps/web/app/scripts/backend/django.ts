@@ -1,28 +1,25 @@
 import { exec } from 'child_process';
+import { mkdir, mkdirSync } from 'fs';
 import util from 'util';
 
 const execAsync = util.promisify(exec);
 
 export async function installDjangoDependencies(projectPath: string) {
     try {
-        // Create virtual environment
-        await execAsync('python -m venv venv', { cwd: projectPath });
+        
+        mkdirSync(`${projectPath}/backend`, { recursive: true });
 
-        // Activate virtual environment and install dependencies
-        const activateCmd = process.platform === 'win32' ? 
-            'venv\\Scripts\\activate' : 
-            'source venv/bin/activate';
+        await execAsync('python -m venv venv', { cwd: `${projectPath}/backend` });
 
-        await execAsync(`${activateCmd} && pip install django djangorestframework django-cors-headers`, 
-            { cwd: projectPath});
+        const pythonCmd = process.platform === 'win32' ? 'venv\\Scripts\\python.exe' : 'venv/bin/python';
 
-        // Create Django project
-        await execAsync(`${activateCmd} && django-admin startproject core .`, 
-            { cwd: projectPath});
+        await execAsync(`${pythonCmd} -m pip install django djangorestframework django-cors-headers djangorestframework_simplejwt`, { cwd: `${projectPath}/backend` });
 
-        // Create main app
-        await execAsync(`${activateCmd} && python manage.py startapp main`, 
-            { cwd: projectPath});
+        await execAsync(`${pythonCmd} -m django startproject core .`, { cwd: `${projectPath}/backend` });
+
+        await execAsync(`${pythonCmd} manage.py startapp main`, { cwd: `${projectPath}/backend` });
+
+        console.log("Django project setup completed!");
 
     } catch (error) {
         console.error('Error installing Django dependencies:', error);
