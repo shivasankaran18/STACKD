@@ -2,12 +2,12 @@ import { join } from 'node:path'
 import { mkdir, writeFile } from 'node:fs/promises'
 import 'dotenv/config'
 
-export async function setupMongoose(config: any, projectDir: string) {
+export async function setupMongoose(config: any, projectDir: string,emitLog: (log: string) => void) {
     const backendDir = join(projectDir, 'backend');
     const modelsDir = join(backendDir, 'src', 'models');
     await mkdir(modelsDir, { recursive: true });
 
-    // Generate .env file
+    emitLog('Generating environment configuration...');
     const envContent = `
 # MongoDB Configuration
 ${config.env?.MONGODB_URI_ENV || 'MONGODB_URI'}=mongodb://localhost:27017/${config.databaseName || 'myapp'}
@@ -21,7 +21,9 @@ PORT=3000
         join(backendDir, '.env'),
         envContent.trim() + '\n'
     );
+    emitLog('✅ Environment configuration created');
 
+    emitLog('Setting up database connection...');
     const dbCode = `
 import mongoose from 'mongoose';
 
@@ -36,13 +38,13 @@ export async function connectDB() {
         process.exit(1);
     }
 }
-
+    
 export async function disconnectDB() {
     await mongoose.disconnect();
     console.log('Disconnected from MongoDB');
 }
 `;
-
+    emitLog('✅ Database connection setup complete');
     await writeFile(
         join(backendDir, 'db.ts'),
         dbCode

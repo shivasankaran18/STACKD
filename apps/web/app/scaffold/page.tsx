@@ -172,7 +172,7 @@ export default function ScaffoldPage() {
             description: "Select your ORM",
             icon: <Database className="w-5 h-5" />,
             options: config.database === 'postgresql' ? [
-                { id: 'risma', name: 'Prisma', description: 'Prisma ORM', features: ['Type-safe', 'Migrations'] },
+                { id: 'prisma', name: 'Prisma', description: 'Prisma ORM', features: ['Type-safe', 'Migrations'] },
                 { id: 'drizzle', name: 'Drizzle', description: 'Drizzle ORM', features: ['Lightweight', 'Flexible'] }
             ] : config.database === 'mongodb' ? [
                 { id: 'mongoose', name: 'Mongoose', description: 'Mongoose ORM', features: ['Schemas', 'Validation'] }
@@ -184,6 +184,7 @@ export default function ScaffoldPage() {
             icon: <Server className="w-5 h-5" />,
             options: [
                 { id: 'jwt', name: 'JWT', description: 'JSON Web Tokens', features: ['Stateless', 'Secure'] },
+                { id: 'nextauth', name: 'NextAuth', description: 'NextAuth.js', features: ['Strategies', 'Middleware'] },
                 { id: 'passport', name: 'Passport', description: 'Passport.js', features: ['Strategies', 'Middleware'] }
             ]
         },
