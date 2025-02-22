@@ -7,13 +7,15 @@ export async function createReactJS(config, projectDir) {
     
     await execSync(`npm create vite@latest frontend -- --template react`, {
         cwd: projectDir,
-        stdio: 'inherit'
+      stdio: 'inherit',
+        shell: true
     });
 
     console.log("Installing dependencies...");
     await execSync('npm install', {
         cwd: join(projectDir, 'frontend'),
-        stdio: 'inherit'
+        stdio: 'inherit',
+        shell: true
     });
 
     const viteConfig = `
