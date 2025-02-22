@@ -14,6 +14,7 @@ export default function ConfigurePage() {
         frontend: searchParams.get('frontend'),
         backend: searchParams.get('backend'),
         database: searchParams.get('database'),
+        orm : 'prisma'
     }
 
     const [config, setConfig] = useState({

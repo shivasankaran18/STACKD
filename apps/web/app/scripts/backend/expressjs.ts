@@ -1,9 +1,10 @@
+import { execSync } from 'node:child_process'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { writeFileSync } from 'fs'
 
 export async function createExpressJS(config: any, projectDir: string) {
     await mkdir(join(projectDir, 'backend'))
-    
     const backendPackageJson = {
         name: "backend",
         version: "1.0.0",
@@ -59,4 +60,10 @@ app.listen(port, () => {
         join(projectDir, 'backend', 'src', 'index.js'),
         backendIndex.trim()
     )
+
+    // Create .env file with DATABASE_URL
+    const envContent = `DATABASE_URL=${config.dbUrl}\n`;
+    writeFileSync(join(projectDir, 'backend', '.env'), envContent);
+
+    await execSync("npm install",{cwd : projectDir + '/backend',stdio : "inherit"});
 } 

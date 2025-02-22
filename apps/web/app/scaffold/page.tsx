@@ -17,6 +17,9 @@ interface ProjectConfig {
     frontend: string | null;
     backend: string | null;
     database: string | null;
+    orm: string | null;
+    auth: string | null;
+    dbUrl: string;
 }
 
 export default function ScaffoldPage() {
@@ -28,7 +31,10 @@ export default function ScaffoldPage() {
         backendPort: 3001,
         frontend: null,
         backend: null,
-        database: null
+        database: null,
+        orm: null,
+        auth: null,
+        dbUrl: ''
     })
 
     const steps = [
@@ -149,6 +155,47 @@ export default function ScaffoldPage() {
                     features: ['Mongoose', 'Schemas', 'TypeScript']
                 }
             ]
+        },
+        {
+            title: "ORM",
+            description: "Select your ORM",
+            icon: <Database className="w-5 h-5" />,
+            options: config.database === 'postgresql' ? [
+                { id: 'prisma', name: 'Prisma', description: 'Prisma ORM', features: ['Type-safe', 'Migrations'] },
+                { id: 'hastle', name: 'Hastle', description: 'Hastle ORM', features: ['Lightweight', 'Flexible'] }
+            ] : config.database === 'mongodb' ? [
+                { id: 'mongoose', name: 'Mongoose', description: 'Mongoose ORM', features: ['Schemas', 'Validation'] }
+            ] : []
+        },
+        {
+            title: "Authentication",
+            description: "Choose your authentication method",
+            icon: <Server className="w-5 h-5" />,
+            options: [
+                { id: 'jwt', name: 'JWT', description: 'JSON Web Tokens', features: ['Stateless', 'Secure'] },
+                { id: 'passport', name: 'Passport', description: 'Passport.js', features: ['Strategies', 'Middleware'] }
+            ]
+        },
+        {
+            title: "Database URL",
+            description: "Enter your database URL",
+            icon: <Database className="w-5 h-5" />,
+            component: (
+                <div className="space-y-4 w-full max-w-md">
+                    <div>
+                        <Label htmlFor="dbUrl">Database URL</Label>
+                        <Input
+                            id="dbUrl"
+                            placeholder="Enter your database URL"
+                            value={config.dbUrl}
+                            onChange={(e) => setConfig(prev => ({ 
+                                ...prev, 
+                                dbUrl: e.target.value 
+                            }))}
+                        />
+                    </div>
+                </div>
+            )
         }
     ]
 
@@ -241,19 +288,19 @@ export default function ScaffoldPage() {
                 />
 
                 <div className="mt-8">
-                    {steps[step].component ? (
+                    {steps[step]?.component ? (
                         steps[step].component
                     ) : (
                         <div className="grid md:grid-cols-2 gap-4">
-                            {steps[step].options?.map((option) => (
+                            {steps[step]?.options?.map((option) => (
                                 <Card 
                                     key={option.id}
                                     className={`p-4 cursor-pointer transition-all ${
-                                        config[steps[step].title.toLowerCase() as keyof ProjectConfig] === option.id
+                                        config[steps[step]?.title.toLowerCase() as keyof ProjectConfig] === option.id
                                             ? 'border-primary' 
                                             : 'hover:border-primary/50'
                                     }`}
-                                    onClick={() => handleSelect(steps[step].title.toLowerCase() as keyof ProjectConfig, option.id)}
+                                    onClick={() => handleSelect(steps[step]?.title.toLowerCase() as keyof ProjectConfig, option.id)}
                                 >
                                     <h3 className="font-medium mb-1">{option.name}</h3>
                                     <p className="text-sm text-muted-foreground mb-4">
@@ -283,14 +330,23 @@ export default function ScaffoldPage() {
                         {step === steps.length - 1 ? (
                             <Button 
                                 onClick={handleGenerate}
-                                disabled={!config.frontend || !config.backend || !config.database}
+                                // disabled={
+                                //     !config.projectName.trim() || 
+                                //     !config.projectPath.trim() || 
+                                //     !config.frontend || 
+                                //     !config.backend || 
+                                //     !config.database || 
+                                //     !config.orm || 
+                                //     !config.auth || 
+                                //     !config.dbUrl.trim()
+                                // }
                             >
                                 Generate Project
                             </Button>
                         ) : (
                             <Button
                                 onClick={() => setStep(Math.min(steps.length - 1, step + 1))}
-                                disabled={step === 0 ? !config.projectName || !config.projectPath : !config[steps[step].title.toLowerCase() as keyof ProjectConfig]}
+                                disabled={step === 0 ? !config.projectName || !config.projectPath : !config[steps[step]?.title.toLowerCase() as keyof ProjectConfig]}
                             >
                                 Next
                             </Button>

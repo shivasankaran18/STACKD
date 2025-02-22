@@ -1,5 +1,7 @@
+import { execSync } from 'node:child_process'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { writeFileSync } from 'fs'
 
 export async function createExpressTS(config: any, projectDir: string) {
     await mkdir(join(projectDir, 'backend'))
@@ -87,4 +89,10 @@ app.listen(port, () => {
         join(projectDir, 'backend', 'src', 'index.ts'),
         backendIndex.trim()
     )
+
+    // Create .env file with DATABASE_URL
+    const envContent = `DATABASE_URL=${config.dbUrl}\n`;
+    writeFileSync(join(projectDir, 'backend', '.env'), envContent);
+
+    await execSync("npm install",{cwd : projectDir + '/backend',stdio : "inherit"});
 }

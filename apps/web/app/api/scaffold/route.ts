@@ -6,15 +6,16 @@ import { createReactTS } from '@/app/scripts/frontend/reactts'
 import { createReactJS } from '@/app/scripts/frontend/reactjs'
 import { createExpressTS } from '@/app/scripts/backend/expressts'
 import { createExpressJS } from '@/app/scripts/backend/expressjs'
+import { setupPrisma } from '@/app/scripts/orms/prismaSetup'
 
 export async function POST(req: NextRequest) {
     try {
         const config = await req.json()
+        console.log(config)
         const projectDir = join(config.projectPath, config.projectName)
 
         await mkdir(projectDir, { recursive: true })
-        
-        // Select and create frontend based on config
+    
         switch(config.frontend) {
             case 'react-ts':
                 await createReactTS(config, projectDir)
@@ -32,34 +33,12 @@ export async function POST(req: NextRequest) {
                 await createExpressTS(config, projectDir)
                 break
             case 'express':
+                console.log("Creating the backend")
                 await createExpressJS(config, projectDir)
                 break
             default:
                 throw new Error(`Unsupported backend: ${config.backend}`)
         }
-
-        // Create root package.json
-        const rootPackageJson = {
-            name: config.projectName,
-            version: '1.0.0',
-            private: true,
-            scripts: {
-                "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
-                "dev:frontend": "cd frontend && npm run dev",
-                "dev:backend": "cd backend && npm run dev",
-                "build": "concurrently \"cd frontend && npm run build\" \"cd backend && npm run build\"",
-                "install:all": "concurrently \"cd frontend && npm install\" \"cd backend && npm install\"",
-                "start": "concurrently \"cd frontend && npm run preview\" \"cd backend && npm start\""
-            },
-            devDependencies: {
-                "concurrently": "^8.2.0"
-            }
-        }
-
-        await writeFile(
-            join(projectDir, 'package.json'),
-            JSON.stringify(rootPackageJson, null, 2)
-        )
 
         // Create README.md
         const readme = `
@@ -151,14 +130,8 @@ Thumbs.db
             gitignore.trim()
         )
 
-        // Install dependencies
-        console.log('Installing dependencies...')
-        execSync('npm install', { cwd: projectDir, stdio: 'inherit' })
-        execSync('npm run install:all', { cwd: projectDir, stdio: 'inherit' })
-
-        // Start the servers
-        console.log('Starting servers...')
-        execSync('npm run dev', { cwd: projectDir, stdio: 'inherit' })
+        console.log("Setting up the prisma")
+        await setupPrisma(config, projectDir);
 
         return NextResponse.json({
             success: true,
