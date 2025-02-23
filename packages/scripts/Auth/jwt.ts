@@ -14,7 +14,6 @@ export async function jwtAuthts(config: any, projectDir: any,emitLog: (log: stri
     emitLog('Writing jwt.ts...');
     const jwtAuthFile = `
     const jwt = require('jsonwebtoken');
-
 export const authenticateToken = (req:any, res:any, next:any) => {
     const token = req.header('Authorization')?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Access Denied' });
@@ -34,12 +33,12 @@ export const authenticateToken = (req:any, res:any, next:any) => {
     emitLog('✅ JWT authentication setup completed successfully!');
 }
   
-export async function jwtAuthdjango(config: any, projectDir: any) {
+export async function jwtAuthdjango(config: any, projectDir: any,emitLog: (log: string) => void) {
+    emitLog('Installing jsonwebtoken...');
     const settingsPath = join(projectDir, 'backend', 'core', 'settings.py');
-    
+    emitLog('Updating settings.py...');
     try {
         let settingsContent = fs.readFileSync(settingsPath, 'utf8');
-        
         const restFrameworkSettings = `
 
 REST_FRAMEWORK = {
@@ -58,6 +57,7 @@ REST_FRAMEWORK = {
             settingsContent.slice(insertPosition);
         
         fs.writeFileSync(settingsPath, settingsContent, 'utf8');
+        emitLog('Writing urls.py...');
         let urlsContent = fs.readFileSync(`${projectDir}/backend/core/urls.py`, 'utf8');
         const newUrlsContent = `from django.contrib import admin
 from django.urls import path, include
@@ -75,8 +75,8 @@ urlpatterns = [
 ]
 `;
         fs.writeFileSync(`${projectDir}/backend/core/urls.py`, newUrlsContent, 'utf8');
-
-    } catch (error) {
+        emitLog('✅ JWT authentication setup completed successfully!');
+    } catch (error) { 
         console.error('Error configuring Django settings:', error);
         throw error;
     }
