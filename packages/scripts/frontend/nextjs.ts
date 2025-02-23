@@ -1,5 +1,5 @@
 import { join } from 'node:path'
-import { execSync } from 'child_process'
+import { execSync, ExecSyncOptions } from 'child_process'
 import { writeFile, mkdir } from 'node:fs/promises'
 import { existsSync } from 'fs'
 
@@ -11,11 +11,13 @@ export async function createNextJS(config: any, projectDir: string, emitLog: (lo
             await mkdir(frontendDir, { recursive: true });
         }
         emitLog('Creating Next.js project...');
-        execSync('npm init next-app@latest . -- --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --no-git', {
+        const execOptions: ExecSyncOptions = {
             cwd: frontendDir,
             stdio: 'inherit',
-            shell: true,
-        });
+            encoding: 'utf-8'
+        };
+
+        execSync('npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --no-git', execOptions);
         
         emitLog('Updating package.json...');
         const packageJsonPath = join(frontendDir, 'package.json');

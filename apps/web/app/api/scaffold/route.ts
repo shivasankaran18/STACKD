@@ -14,25 +14,40 @@ import path from 'path'
 import fs from 'fs/promises'
 import { installDjangoDependencies } from '../../../../../packages/scripts/backend/django'
 import createAngularTS from '../../../../../packages/scripts/frontend/angularts'
-import simpleGit from 'simple-git'
 import { setupNextAuth } from '../../../../../packages/scripts/Auth/nextAuth'
 import { setupPassport } from '../../../../../packages/scripts/Auth/passport'
 import { setupMongoose } from '../../../../../packages/scripts/orms/mongoSetup'
 import { setupDrizzle } from '../../../../../packages/scripts/orms/drizzleSetup'
 import { setupTailwindCSS } from '../../../../../packages/scripts/ui/tailwindcss'
 import { setupShadcn } from '../../../../../packages/scripts/ui/shadcn'
+import simpleGit from 'simple-git'
+
+
+
+
+const encoder = new TextEncoder();
+
 export async function POST(req: NextRequest) {
     try {
         const config = await req.json()
+        
         console.log(config)
         const projectDir = join(config.projectPath, config.projectName)
-
         await mkdir(projectDir, { recursive: true })
+        const git = simpleGit(projectDir);
+        git.init()
+            .then(() => console.log('Initialized a new Git repository'))
+            .catch(err => console.error('Error:', err));
+
+        if(config.giturl) {
+            await git.remote(['add', 'origin', config.giturl]).then(() => console.log('Remote added')).catch(err => console.error('Error:', err));
+        }
         const emitLog = (message: string) => {
             console.log(`[Emit Logs]: ${message}`);
+            global.logs = global.logs || [];
+            global.logs.push(message);
         };
         
-
         switch(config.frontend) {
             case 'react-ts':
                 await createReactTS(config, projectDir,emitLog)
@@ -48,12 +63,9 @@ export async function POST(req: NextRequest) {
                 break;
             case 'vue':
                 await createVueJS(config, projectDir,emitLog)
+                break
             case 'vue-ts':
-
                 await createVueTS(config, projectDir,emitLog)
-
-                await createVueTS(config, projectDir,emitLog)
-
                 break
             case 'angularts':
                 await createAngularTS(config, projectDir)
@@ -73,6 +85,9 @@ export async function POST(req: NextRequest) {
             case 'django':
                 await installDjangoDependencies(projectDir);
                 break
+            case 'nextjs':
+                await createNextJS(config, projectDir, emitLog);
+                break;
             default:
                 throw new Error(`Unsupported backend: ${config.backend}`)
         }
@@ -183,6 +198,31 @@ Thumbs.db
         )
     }
 }
+
+export async function GET() {
+    const stream = new ReadableStream({
+        start(controller) {
+            const interval = setInterval(() => {
+                if (global.logs?.length) {
+                    const log = global.logs.shift();
+                    const data = `data: ${log}\n\n`;
+                    controller.enqueue(encoder.encode(data));
+                }
+            }, 100);
+
+            return () => clearInterval(interval);
+        },
+    });
+
+    return new Response(stream, {
+        headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+        },
+    });
+}
+
 async function configureDjangoFiles(projectPath: string) {
 
     const settingsPath = path.join(projectPath, 'core', 'settings.py');
