@@ -38,12 +38,10 @@ export async function createVueJS(config, projectDir) {
         stdio: 'inherit'
     });
 
-    // Create basic Vue structure
     await mkdir(join(projectDir, 'frontend', 'src', 'router'), { recursive: true });
     await mkdir(join(projectDir, 'frontend', 'src', 'stores'), { recursive: true });
     await mkdir(join(projectDir, 'frontend', 'src', 'components'), { recursive: true });
 
-    // Create router setup
     const routerSetup = `
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -64,7 +62,6 @@ export default router`;
         routerSetup.trim()
     );
 
-    // Create store setup
     const storeSetup = `
 import { defineStore } from 'pinia'
 

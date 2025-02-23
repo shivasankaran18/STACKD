@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 
                 await createVueTS(config, projectDir,emitLog)
 
-                await createVueTS(config, projectDir)
+                // await createVueTS(config, projectDir)
 
                 break
             default:

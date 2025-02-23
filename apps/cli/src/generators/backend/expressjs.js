@@ -2,8 +2,8 @@ import { execSync } from 'child_process';
 import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 
-export async function createExpressJS(config, projectDir) {
-    console.log("Creating Express JavaScript backend...");
+export async function createExpressJS(config, projectDir,emitLog) {
+    emitLog("Creating Express JavaScript backend...");
     
     await mkdir(join(projectDir, 'backend'));
     
@@ -63,7 +63,7 @@ app.listen(port, () => {
         backendIndex.trim()
     );
 
-    console.log("Installing backend dependencies...");
+    emitLog("Installing backend dependencies...");
     await execSync("npm install", {
         cwd: join(projectDir, 'backend'),
         stdio: 'inherit',

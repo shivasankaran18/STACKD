@@ -7,7 +7,6 @@ export async function nextAuth(config, projectDir) {
     
     const frontendDir = join(projectDir, 'frontend');
 
-    // Update package.json to add NextAuth dependencies
     console.log("Adding NextAuth dependencies...");
     const packageJsonPath = join(frontendDir, 'package.json');
     const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
@@ -20,11 +19,9 @@ export async function nextAuth(config, projectDir) {
 
     await writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
 
-    // Create auth directory structure
     const authDir = join(frontendDir, 'src', 'app', 'api', 'auth', '[...nextauth]');
     await mkdir(authDir, { recursive: true });
 
-    // Create NextAuth configuration
     console.log("Creating NextAuth configuration...");
     const nextAuthConfig = `
 import NextAuth from 'next-auth';
@@ -83,7 +80,6 @@ export { handler as GET, handler as POST };`;
         nextAuthConfig.trim()
     );
 
-    // Create auth components
     console.log("Creating auth components...");
     const authButton = `
 'use client';
@@ -113,7 +109,6 @@ export function AuthButton() {
         authButton.trim()
     );
 
-    // Update environment variables
     console.log("Updating environment configuration...");
     const envContent = `
 NEXTAUTH_URL=http://localhost:${config.frontendPort}

@@ -7,7 +7,6 @@ export async function passportAuth(config, projectDir) {
     
     const backendDir = join(projectDir, 'backend');
     
-    // Update package.json to add Passport dependencies
     console.log("Adding Passport dependencies...");
     const packageJsonPath = join(backendDir, 'package.json');
     const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
@@ -32,7 +31,6 @@ export async function passportAuth(config, projectDir) {
 
     await writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
 
-    // Create passport configuration
     console.log("Creating Passport configuration...");
     const passportConfig = `
 import passport from 'passport';
@@ -40,14 +38,12 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as JWTStrategy, ExtractJwt } from 'passport-jwt';
 import bcrypt from 'bcryptjs';
 
-// Example user type (modify according to your needs)
 interface User {
     id: number;
     email: string;
     password: string;
 }
 
-// Example users array (replace with your database)
 const users: User[] = [];
 
 passport.use(new LocalStrategy(
@@ -111,7 +107,6 @@ export default passport;`;
         passportConfig.trim()
     );
 
-    // Create auth routes
     console.log("Creating authentication routes...");
     const authRoutes = `
 import { Router } from 'express';
@@ -121,7 +116,6 @@ import jwt from 'jsonwebtoken';
 
 const router = Router();
 
-// Example users array (replace with your database)
 const users: any[] = [];
 
 router.post('/register', async (req, res) => {
@@ -167,7 +161,6 @@ export default router;`;
         authRoutes.trim()
     );
 
-    // Update main app file
     console.log("Updating main application file...");
     const mainAppUpdate = `
 import express from 'express';

@@ -3,13 +3,17 @@ import { createReactTS } from '../generators/frontend/reactts.js';
 import { createReactJS } from '../generators/frontend/reactjs.js';
 // import { createVueTS } from '../generators/frontend/vuets.js';
 // import { createVueJS } from '../generators/frontend/vuejs.js';
-// import { createExpressTS } from '../generators/backend/expressts.js';
+import { createExpressTS } from '../generators/backend/expressts.js';
 import { createExpressJS } from '../generators/backend/expressjs.js';
 import { setupPrisma } from '../generators/orm/prismaSetup.js';
 import { jwtAuth } from '../generators/auth/jwt.js';
 import { mkdir } from 'fs/promises';
 // import chalk from 'chalk';
 // import ora from 'ora';
+
+const emitLog = (message) => {
+  console.log(`[Emit Logs]: ${message}`);
+};
 
 export async function createProject(projectName, options) {
   // const spinner = ora('Creating project...').start();
@@ -33,10 +37,10 @@ export async function createProject(projectName, options) {
     // spinner.text = 'Setting up frontend...';
     switch(options.frontend) {
       case 'React + TypeScript':
-        await createReactTS(config, projectDir);
+        await createReactTS(config, projectDir,emitLog);
         break;
       case 'React (JavaScript)':
-        await createReactJS(config, projectDir);
+        await createReactJS(config, projectDir,emitLog);
         break;
       default:
         console.log('No frontend selected');
@@ -52,9 +56,9 @@ export async function createProject(projectName, options) {
     // Backend setup
     // spinner.text = 'Setting up backend...';
     switch(options.backend) {
-      // case 'Express + TypeScript':
-      //   await createExpressTS(config, projectDir);
-      //   break;
+      case 'Express + TypeScript':
+        await createExpressTS(config, projectDir);
+        break;
       case 'Express (JavaScript)':
         await createExpressJS(config, projectDir);
         break;

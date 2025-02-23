@@ -9,11 +9,9 @@ export async function jwtAuth(config, projectDir) {
     const middlewareDir = join(backendDir, 'src', 'middleware');
     const routesDir = join(backendDir, 'src', 'routes');
 
-    // Create directories
     await mkdir(middlewareDir, { recursive: true });
     await mkdir(routesDir, { recursive: true });
 
-    // Update package.json to add JWT dependencies
     console.log("Adding JWT dependencies...");
     const packageJsonPath = join(backendDir, 'package.json');
     const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
@@ -32,7 +30,6 @@ export async function jwtAuth(config, projectDir) {
 
     await writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
 
-    // Create JWT middleware
     console.log("Creating JWT middleware...");
     const jwtMiddleware = `
 import { Request, Response, NextFunction } from 'express';
@@ -68,7 +65,6 @@ export const generateToken = (payload: any) => {
         jwtMiddleware.trim()
     );
 
-    // Create auth routes
     console.log("Creating authentication routes...");
     const authRoutes = `
 import { Router } from 'express';
@@ -77,23 +73,19 @@ import { authenticateToken, generateToken } from '../middleware/auth';
 
 const router = Router();
 
-// Example user storage (replace with your database)
 const users: any[] = [];
 
 router.post('/register', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Check if user exists
         if (users.find(u => u.email === email)) {
             return res.status(400).json({ error: 'User already exists' });
         }
 
-        // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Create user
         const user = {
             id: users.length + 1,
             email,
@@ -101,7 +93,6 @@ router.post('/register', async (req, res) => {
         };
         users.push(user);
 
-        // Generate token
         const token = generateToken({ id: user.id, email: user.email });
 
         res.json({ token });
@@ -114,19 +105,16 @@ router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Find user
         const user = users.find(u => u.email === email);
         if (!user) {
             return res.status(400).json({ error: 'User not found' });
         }
 
-        // Validate password
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) {
             return res.status(400).json({ error: 'Invalid password' });
         }
 
-        // Generate token
         const token = generateToken({ id: user.id, email: user.email });
 
         res.json({ token });
@@ -146,7 +134,6 @@ export default router;`;
         authRoutes.trim()
     );
 
-    // Update main app file
     console.log("Updating main application file...");
     const mainAppUpdate = `
 import express from 'express';
@@ -162,16 +149,12 @@ const port = process.env.PORT || ${config.backendPort};
 
 app.use(cors());
 app.use(express.json());
-
-// Auth routes
 app.use('/api/auth', authRoutes);
 
-// Protected route example
 app.get('/api/protected', authenticateToken, (req, res) => {
     res.json({ message: 'This is a protected route', user: req.user });
 });
 
-// Public route example
 app.get('/api/public', (req, res) => {
     res.json({ message: 'This is a public route' });
 });
@@ -185,7 +168,6 @@ app.listen(port, () => {
         mainAppUpdate.trim()
     );
 
-    // Create environment file with JWT secret
     console.log("Setting up environment configuration...");
     const envContent = `
 JWT_SECRET=your-secret-key-change-this-in-production

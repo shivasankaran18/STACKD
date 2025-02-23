@@ -7,26 +7,22 @@ export async function setupPrisma(config, projectDir) {
     
     const backendDir = join(projectDir, 'backend');
 
-    // Create .env file with database URL
     console.log("Creating environment configuration...");
     const envContent = `DATABASE_URL=${config.dbUrl}\n`;
     await writeFile(join(backendDir, '.env'), envContent);
 
-    // Install Prisma dependencies
     console.log("Installing Prisma dependencies...");
     await execSync('npm install prisma @prisma/client', { 
         cwd: backendDir,
         stdio: 'inherit' 
     });
 
-    // Initialize Prisma
     console.log("Initializing Prisma...");
     await execSync('npx prisma init', { 
         cwd: backendDir,
         stdio: 'inherit'
     });
 
-    // Create example schema
     const schemaExample = `
 // This is an example schema. Modify according to your needs.
 model User {

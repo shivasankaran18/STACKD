@@ -9,11 +9,9 @@ export async function setupDrizzle(config, projectDir) {
     const dbDir = join(backendDir, 'src', 'db');
     const schemasDir = join(dbDir, 'schema');
 
-    // Create directory structure
     console.log("Creating directory structure...");
     await mkdir(schemasDir, { recursive: true });
 
-    // Create environment configuration
     console.log("Setting up environment configuration...");
     const envContent = `
 # Database Configuration
@@ -27,7 +25,6 @@ PORT=3000
         envContent.trim() + '\n'
     );
 
-    // Install Drizzle dependencies
     console.log("Installing Drizzle dependencies...");
     await execSync('npm install drizzle-orm pg', {
         cwd: backendDir,
@@ -39,7 +36,6 @@ PORT=3000
         stdio: 'inherit'
     });
 
-    // Create database connection setup
     console.log("Setting up database connection...");
     const dbCode = `
 import { drizzle } from 'drizzle-orm/node-postgres';
@@ -72,7 +68,6 @@ export async function disconnectDB() {
         dbCode.trim()
     );
 
-    // Create example schema
     console.log("Creating example schema...");
     const exampleSchemaCode = `
 import { pgTable, serial, varchar, timestamp } from 'drizzle-orm/pg-core';
@@ -88,7 +83,6 @@ export const examples = pgTable('examples', {
         exampleSchemaCode.trim()
     );
 
-    // Create Drizzle config
     console.log("Creating Drizzle configuration...");
     const drizzleConfigCode = `
 import type { Config } from 'drizzle-kit';

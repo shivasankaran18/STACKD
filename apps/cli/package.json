@@ -1,5 +1,5 @@
 {
-  "name": "cli",
+  "name": "@shivasankaran18/stackd",
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
