@@ -16,7 +16,7 @@ export async function createNextJS(config: any, projectDir: string, emitLog: (lo
             stdio: 'inherit',
             shell: true,
         });
-
+        
         emitLog('Updating package.json...');
         const packageJsonPath = join(frontendDir, 'package.json');
         const packageJson = require(packageJsonPath);
