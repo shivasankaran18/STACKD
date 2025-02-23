@@ -6,20 +6,15 @@ import { existsSync } from 'fs'
 export async function createNextJS(config: any, projectDir: string, emitLog: (log: string) => void) {
     try {
         const frontendDir = join(projectDir, 'frontend');
-        
-        // Ensure frontend directory exists
         if (!existsSync(frontendDir)) {
             emitLog('Creating frontend directory...');
             await mkdir(frontendDir, { recursive: true });
         }
-
         emitLog('Creating Next.js project...');
-        
-        // Use npm directly instead of npx
         execSync('npm init next-app@latest . -- --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --no-git', {
             cwd: frontendDir,
             stdio: 'inherit',
-            shell: true  // Explicitly specify shell usage
+            shell: true,
         });
 
         emitLog('Updating package.json...');
@@ -33,7 +28,6 @@ export async function createNextJS(config: any, projectDir: string, emitLog: (lo
             JSON.stringify(packageJson, null, 2)
         );
 
-        // Create environment file
         emitLog('Creating environment file...');
         const envContent = `
 NEXT_PUBLIC_API_URL=http://localhost:${config.backendPort}
@@ -46,7 +40,6 @@ NEXTAUTH_SECRET=your-secret-key-here
             envContent.trim() + '\n'
         );
 
-        // Create API proxy configuration
         emitLog('Setting up API proxy...');
         const nextConfigContent = `
 /** @type {import('next').NextConfig} */
