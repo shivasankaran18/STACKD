@@ -1,23 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
-import { createReactTS } from '@/app/scripts/frontend/reactts'
-import { createReactJS } from '@/app/scripts/frontend/reactjs'
-import { createExpressTS } from '@/app/scripts/backend/expressts'
-import { createExpressJS } from '@/app/scripts/backend/expressjs'
-import { setupPrisma } from '@/app/scripts/orms/prismaSetup'
-import { createVueJS } from '@/app/scripts/frontend/vuejs'
-import { createVueTS } from '@/app/scripts/frontend/vuets'
-import { jwtAuthts , jwtAuthdjango} from '@/app/scripts/Auth/jwt'
+import { createReactTS } from '../../../../../packages/scripts/frontend/reactts'
+import { createReactJS } from '../../../../../packages/scripts/frontend/reactjs'
+import { createExpressTS } from '../../../../../packages/scripts/backend/expressts'
+import { createExpressJS } from '../../../../../packages/scripts/backend/expressjs'
+import { setupPrisma } from '../../../../../packages/scripts/orms/prismaSetup'
+import { createVueJS } from '../../../../../packages/scripts/frontend/vuejs'
+import { createNextJS } from '../../../../../packages/scripts/frontend/nextjs'
+import { createVueTS } from '../../../../../packages/scripts/frontend/vuets'
+import { jwtAuthts , jwtAuthdjango} from '../../../../../packages/scripts/Auth/jwt'
 import path from 'path'
 import fs from 'fs/promises'
-import { installDjangoDependencies } from '@/app/scripts/backend/django'
-import { setupNextAuth } from '@/app/scripts/Auth/nextAuth'
-import { setupPassport } from '@/app/scripts/Auth/passport'
-import { setupPrisma } from '@/app/scripts/orms/prismaSetup'
-import { setupDrizzle } from '@/app/scripts/orms/drizzleSetup'
-import { setupMongoose } from '@/app/scripts/orms/mongoSetup'
-
+import { installDjangoDependencies } from '../../../../../packages/scripts/backend/django'
+import createAngularTS from '../../../../../packages/scripts/frontend/angularts'
+import simpleGit from 'simple-git'
+import { setupNextAuth } from '../../../../../packages/scripts/Auth/nextAuth'
+import { setupPassport } from '../../../../../packages/scripts/Auth/passport'
+import { setupMongoose } from '../../../../../packages/scripts/orms/mongoSetup'
+import { setupDrizzle } from '../../../../../packages/scripts/orms/drizzleSetup'
+import { setupTailwindCSS } from '../../../../../packages/scripts/ui/tailwindcss'
+import { setupShadcn } from '../../../../../packages/scripts/ui/shadcn'
 export async function POST(req: NextRequest) {
     try {
         const config = await req.json()
@@ -29,6 +32,7 @@ export async function POST(req: NextRequest) {
             console.log(`[Emit Logs]: ${message}`);
         };
         
+
         switch(config.frontend) {
             case 'react-ts':
                 await createReactTS(config, projectDir,emitLog)
@@ -36,18 +40,23 @@ export async function POST(req: NextRequest) {
             case 'react':
                 await createReactJS(config, projectDir,emitLog)
                 break
-
+            case 'nextjs':
+                await createNextJS(config, projectDir, emitLog);
+                break;
             case 'django':
                 await installDjangoDependencies(projectDir);
-
+                break;
             case 'vue':
                 await createVueJS(config, projectDir,emitLog)
             case 'vue-ts':
 
                 await createVueTS(config, projectDir,emitLog)
 
-                // await createVueTS(config, projectDir)
+                await createVueTS(config, projectDir,emitLog)
 
+                break
+            case 'angularts':
+                await createAngularTS(config, projectDir)
                 break
             default:
                 throw new Error(`Unsupported frontend: ${config.frontend}`)
@@ -68,9 +77,9 @@ export async function POST(req: NextRequest) {
                 throw new Error(`Unsupported backend: ${config.backend}`)
         }
 
-        switch(config.authentication) {
+        switch(config.auth) {
             case 'jwt':
-                await jwtAuth(config, projectDir,emitLog);
+                await jwtAuthts(config, projectDir,emitLog);
                 break
             case 'nextauth':
                 await setupNextAuth(config, projectDir,emitLog);
@@ -139,6 +148,17 @@ Thumbs.db
             default:
                 break;
         }
+        switch(config.ui) {
+            case 'tailwind':
+                await setupTailwindCSS(config, projectDir,emitLog);
+                break;
+            case 'shadcn':
+                await setupTailwindCSS(config, projectDir,emitLog);
+                await setupShadcn(config, projectDir,emitLog);
+                break;
+            default:
+                break;
+        }
         return NextResponse.json({
             success: true,
             projectPath: projectDir,
@@ -163,7 +183,6 @@ Thumbs.db
         )
     }
 }
-
 async function configureDjangoFiles(projectPath: string) {
 
     const settingsPath = path.join(projectPath, 'core', 'settings.py');
