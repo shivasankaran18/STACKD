@@ -1,14 +1,13 @@
 'use client';
-
-import React, { useState } from 'react';
-import { Button } f
-  auth: string | 'Skip' | null;rom '@/components/ui/button';
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { Layout, Server, Database, FolderOpen, GitBranch } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Layout, Server, Database, FolderOpen } from 'lucide-react';
 import { Steps } from '@/components/ui/steps';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
+import { motion } from 'framer-motion';
 
 interface ProjectConfig {
   projectName: string;
@@ -20,7 +19,8 @@ interface ProjectConfig {
   database: string | 'Skip' | null;
   orm: string | 'Skip' | null;
   dbUrl: string;
-  giturl: string | 'Skip' | null;
+  giturl: string | null;
+  ui : string | null;
 }
 
 const SkipButton = ({ onSkip }: { onSkip: () => void }) => (
@@ -66,6 +66,47 @@ const Navbar = () => (
   </nav>
 );
 
+const TerminalLogs = ({ logs }: { logs: string[] }) => (
+  <div className="bg-black rounded-lg p-4 font-mono text-sm text-green-400 max-h-96 overflow-auto">
+    {logs.map((log, i) => (
+      <div key={i} className="whitespace-pre-wrap">
+        <span className="text-blue-400">$</span> {log}
+      </div>
+    ))}
+  </div>
+);
+
+const SuccessAnimation = ({ projectPath }: { projectPath: string }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.5 }}
+    animate={{ opacity: 1, scale: 1 }}
+    className="text-center p-8"
+  >
+    <motion.div
+      animate={{ rotate: 360 }}
+      transition={{ duration: 0.5 }}
+      className="text-6xl mb-4"
+    >
+      🎉
+    </motion.div>
+    <h2 className="text-2xl font-bold mb-4">Congratulations!</h2>
+    <p className="text-muted-foreground mb-6">
+      Your project is ready. Happy coding!
+    </p>
+    <div className="bg-secondary p-4 rounded-lg mb-6">
+      <p className="font-medium mb-2">Project Location:</p>
+      <code className="text-sm">{projectPath}</code>
+    </div>
+    <Button
+      onClick={() => window.open(`file://${projectPath}`, '_blank')}
+      className="gap-2"
+    >
+      <FolderOpen className="h-4 w-4" />
+      Open Project Folder
+    </Button>
+  </motion.div>
+);
+
 const ScaffoldPage = () => {
   const [step, setStep] = useState(0);
   const [config, setConfig] = useState<ProjectConfig>({
@@ -80,7 +121,28 @@ const ScaffoldPage = () => {
     auth: null,
     dbUrl: '',
     giturl: null,
+    ui : null,
   });
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [logs, setLogs] = useState<string[]>([]);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [generatedPath, setGeneratedPath] = useState('');
+
+  useEffect(() => {
+    if (isGenerating) {
+      const eventSource = new EventSource('/api/scaffold/logs');
+      
+      eventSource.onmessage = (event) => {
+        setLogs(prev => [...prev, event.data]);
+      };
+
+      eventSource.onerror = () => {
+        eventSource.close();
+      };
+
+      return () => eventSource.close();
+    }
+  }, [isGenerating]);
 
   const steps = [
     {
@@ -141,8 +203,19 @@ const ScaffoldPage = () => {
         { id: 'vue-ts', name: 'Vue + TypeScript', description: 'Vue 3 with TypeScript template', features: ['Vite', 'TypeScript', 'Vue Router', 'Pinia', 'TailwindCSS'] },
         { id: 'vue', name: 'Vue (JavaScript)', description: 'Vue 3 with JavaScript template', features: ['Vite', 'JavaScript', 'Vue Router', 'Pinia', 'TailwindCSS'] },
         { id: 'angularts', name: 'Angular (Typescript)', description: 'Angular 16 with Typescript template', features: ['Angular CLI', 'Typescript', 'Angular Router', 'Angular Material', 'TailwindCSS'] },
+        { id: 'nextjs', name: 'Next.js', description: 'Next.js with TypeScript template', features: ['Next.js', 'TypeScript', 'TailwindCSS'] },
         { id: 'Skip', name: 'Skip', description: 'Skip frontend configuration', features: ['Skip this step'] },
       ]
+    },
+    {
+        title : "UI",
+        description : "Choose your UI",
+        icon : <Layout className="w-5 h-5" />,
+        options : [
+            { id: 'shadcn', name: 'Shadcn', description: 'Shadcn UI', features: ['Shadcn UI', 'TailwindCSS'] },
+            { id: 'tailwind', name: 'TailwindCSS', description: 'TailwindCSS', features: ['TailwindCSS', 'React'] },
+            { id: 'Skip', name: 'Skip', description: 'Skip UI configuration', features: ['Skip this step'] },
+        ]
     },
     {
       title: "Backend",
@@ -181,7 +254,7 @@ const ScaffoldPage = () => {
       ]
     },
     {
-      title: "Authentication",
+      title: "auth",
       description: "Choose your authentication method",
       icon: <Server className="w-5 h-5" />,
       options: [
@@ -208,30 +281,24 @@ const ScaffoldPage = () => {
           </div>
         </div>
       ) : null
-    },
-    {
-      title: "Repository",
-      description: "Add Git repository",
-      icon: <GitBranch className="w-5 h-5" />,
-      component: (
-        <div className="space-y-4 w-full max-w-md">
-          <div>
-            <Label htmlFor="giturl">Git Repository URL</Label>
-            <div className="space-y-2">
+    },{
+        title: "Git URL",
+        description: "Enter your git URL",
+        icon: <Database className="w-5 h-5" />,
+        component: config.giturl !== 'Skip' ? (
+          <div className="space-y-4 w-full max-w-md">
+            <div>
+              <Label htmlFor="giturl">Git URL</Label>
               <Input
                 id="giturl"
-                placeholder="https://github.com/username/repository"
+                placeholder="Enter your git URL"
                 value={config.giturl || ''}
                 onChange={(e) => setConfig(prev => ({ ...prev, giturl: e.target.value }))}
               />
-              <p className="text-sm text-muted-foreground">
-                Enter the URL of your Git repository (optional)
-              </p>
             </div>
           </div>
-        </div>
-      )
-    }
+        ) : null
+      }
   ];
 
   const handleSelect = (key: keyof ProjectConfig, value: string) => {
@@ -261,6 +328,9 @@ const ScaffoldPage = () => {
     if (!validateConfig()) return;
 
     try {
+      setIsGenerating(true);
+      setLogs([]);
+      
       const response = await fetch('/api/scaffold', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -272,33 +342,13 @@ const ScaffoldPage = () => {
       const result = await response.json();
 
       if (result.success) {
-        toast.success('Project generated successfully!', {
-          description: (
-            <div className="mt-2">
-              <p className="font-medium">Project created at:</p>
-              <code className="block bg-secondary p-2 rounded mt-1">
-                {result.projectPath}
-              </code>
-
-              <p className="font-medium mt-4">To start development:</p>
-              <div className="bg-secondary p-2 rounded mt-1">
-                {result.instructions.setup.map((step: string, i: number) => (
-                  <code key={i} className="block">{step}</code>
-                ))}
-              </div>
-
-              <p className="font-medium mt-4">Your app will run at:</p>
-              <div className="bg-secondary p-2 rounded mt-1">
-                <code className="block">Frontend: http://localhost:{config.frontendPort}</code>
-                <code className="block">Backend: http://localhost:{config.backendPort}</code>
-              </div>
-            </div>
-          ),
-          duration: 10000,
-        });
+        setGeneratedPath(result.projectPath);
+        setIsSuccess(true);
       }
     } catch (error) {
       toast.error('Failed to generate project');
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -386,18 +436,16 @@ const ScaffoldPage = () => {
                     />
                   )}
                   <Button
-                    onClick={() => {
-                      if (steps[step].component) {
-                        // For component-based steps (like Repository URL)
-                        if (step === steps.findIndex(s => s.title === "Repository")) {
-                          setConfig(prev => ({ ...prev, giturl: prev.giturl || 'Skip' }));
-                        }
-                        setStep(step + 1);
-                      } else {
-                        setStep(Math.min(steps.length - 1, step + 1));
-                      }
-                    }}
-                    disabled={step === 0 ? !config.projectName || !config.projectPath : (!steps[step].component && !config[steps[step]?.title.toLowerCase() as keyof ProjectConfig])}
+                    onClick={() => setStep(Math.min(steps.length - 1, step + 1))}
+                    disabled={
+                      step === 0 
+                        ? !config.projectName || !config.projectPath 
+                        : step === steps.length - 2 && config.database !== 'Skip'  // Database URL step
+                        ? !config.dbUrl
+                        : step === steps.length - 1 && config.giturl !== 'Skip'    // Git URL step
+                        ? !config.giturl
+                        : !config[steps[step]?.title.toLowerCase() as keyof ProjectConfig]
+                    }
                     className="px-6"
                   >
                     Next
@@ -406,6 +454,15 @@ const ScaffoldPage = () => {
               )}
             </div>
           </div>
+
+          {isSuccess ? (
+            <SuccessAnimation projectPath={generatedPath} />
+          ) : isGenerating ? (
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Generating Your Project...</h2>
+              <TerminalLogs logs={logs} />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
