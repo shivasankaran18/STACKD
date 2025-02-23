@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { mkdir, mkdirSync } from 'fs';
+import {  mkdirSync } from 'fs';
 import util from 'util';
 
 const execAsync = util.promisify(exec);

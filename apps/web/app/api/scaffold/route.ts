@@ -1,23 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
-import { createReactTS } from '@/app/scripts/frontend/reactts'
-import { createReactJS } from '@/app/scripts/frontend/reactjs'
-import { createExpressTS } from '@/app/scripts/backend/expressts'
-import { createExpressJS } from '@/app/scripts/backend/expressjs'
-import { setupPrisma } from '@/app/scripts/orms/prismaSetup'
-import { installDjangoDependencies } from '@/app/scripts/backend/django'
-
-import { createVueJS } from '@/app/scripts/frontend/vuejs'
-import { createVueTS } from '@/app/scripts/frontend/vuets'
-import { jwtAuthts , jwtAuthdjango} from '@/app/scripts/Auth/jwt'
+import { createReactTS } from '../../../../../packages/scripts/frontend/reactts'
+import { createReactJS } from '../../../../../packages/scripts/frontend/reactjs'
+import { createExpressTS } from '../../../../../packages/scripts/backend/expressts'
+import { createExpressJS } from '../../../../../packages/scripts/backend/expressjs'
+import { setupPrisma } from '../../../../../packages/scripts/orms/prismaSetup'
+import { createVueJS } from '../../../../../packages/scripts/frontend/vuejs'
+import { createVueTS } from '../../../../../packages/scripts/frontend/vuets'
+import { jwtAuthts , jwtAuthdjango} from '../../../../../packages/scripts/Auth/jwt'
 import path from 'path'
 import fs from 'fs/promises'
-import { installDjangoDependencies } from '@/app/scripts/backend/django'
-import { setupNextAuth } from '@/app/scripts/Auth/nextAuth'
-import { setupPassport } from '@/app/scripts/Auth/passport'
-import { setupDrizzle } from '@/app/scripts/orms/drizzleSetup'
-import { setupMongoose } from '@/app/scripts/orms/mongoSetup'
+import { installDjangoDependencies } from '../../../../../packages/scripts/backend/django'
+    import { setupNextAuth } from '../../../../../packages/scripts/Auth/nextAuth'
+import { setupPassport } from '../../../../../packages/scripts/Auth/passport'
+import { setupDrizzle } from '../../../../../packages/scripts/orms/drizzleSetup'
+import { setupMongoose } from '../../../../../packages/scripts/orms/mongoSetup'
+import { setupTailwindCSS } from '../../../../../packages/scripts/ui/tailwindcss'
+import { setupShadcn } from '../../../../../packages/scripts/ui/shadcn'
+import { createNextJS } from '../../../../../packages/scripts/frontend/nextjs'
 
 export async function POST(req: NextRequest) {
     try {
@@ -37,7 +38,9 @@ export async function POST(req: NextRequest) {
             case 'react':
                 await createReactJS(config, projectDir,emitLog)
                 break
-
+            case 'nextjs':
+                await createNextJS(config, projectDir, emitLog);
+                break;
             case 'django':
                 await installDjangoDependencies(projectDir);
 
@@ -69,9 +72,9 @@ export async function POST(req: NextRequest) {
                 throw new Error(`Unsupported backend: ${config.backend}`)
         }
 
-        switch(config.authentication) {
+        switch(config.auth) {
             case 'jwt':
-                await jwtAuth(config, projectDir,emitLog);
+                await jwtAuthts(config, projectDir,emitLog);
                 break
             case 'nextauth':
                 await setupNextAuth(config, projectDir,emitLog);
@@ -140,6 +143,17 @@ Thumbs.db
             default:
                 break;
         }
+        switch(config.ui) {
+            case 'tailwind':
+                await setupTailwindCSS(config, projectDir,emitLog);
+                break;
+            case 'shadcn':
+                await setupTailwindCSS(config, projectDir,emitLog);
+                await setupShadcn(config, projectDir,emitLog);
+                break;
+            default:
+                break;
+        }
         return NextResponse.json({
             success: true,
             projectPath: projectDir,
@@ -164,7 +178,6 @@ Thumbs.db
         )
     }
 }
-
 async function configureDjangoFiles(projectPath: string) {
 
     const settingsPath = path.join(projectPath, 'core', 'settings.py');

@@ -1,8 +1,5 @@
 'use client'
-
-
 import { useState } from 'react'
-
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Layout, Server, Database, FolderOpen } from "lucide-react"
@@ -22,6 +19,7 @@ interface ProjectConfig {
     orm: string | null;
     auth: string | null;
     dbUrl: string;
+    ui: string | null;
 }
 
 export default function ScaffoldPage() {
@@ -37,13 +35,8 @@ export default function ScaffoldPage() {
         orm: null,
         auth: null,
         dbUrl: '',
+        ui: null,
     })
-
-    const uiFrameworkOptions = [
-        { value: 'tailwind', label: 'Tailwind CSS' },
-        { value: 'shadcn', label: 'shadcn/ui (includes Tailwind)' },
-        { value: 'none', label: 'No UI Framework' },
-    ];
 
     const steps = [
         {
@@ -142,8 +135,23 @@ export default function ScaffoldPage() {
                     name: 'Vue (JavaScript)',
                     description: 'Vue 3 with JavaScript template',
                     features: ['Vite', 'JavaScript', 'Vue Router', 'Pinia', 'TailwindCSS']
-                            
+                },
+                {
+                    id: 'nextjs',
+                    name: 'Next.js',
+                    description: 'React framework with SSR',
+                    features: ['TypeScript', 'App Router', 'API Routes', 'SSR']
                 }
+            ]
+        },
+        {
+            title: "UI",
+            description: "Select your UI framework",
+            icon: <Layout className="w-5 h-5" />,
+            options: [
+                { id: 'tailwind', name: 'Tailwind CSS', description: 'Tailwind CSS', features: ['Tailwind CSS'] },
+                { id: 'shadcn', name: 'shadcn/ui (includes Tailwind)', description: 'shadcn/ui (includes Tailwind)', features: ['Tailwind CSS'] },
+                { id: 'none', name: 'No UI Framework', description: 'No UI Framework', features: [] },
             ]
         },
         {
@@ -202,7 +210,7 @@ export default function ScaffoldPage() {
             ] : []
         },
         {
-            title: "Authentication",
+            title: "Auth",
             description: "Choose your authentication method",
             icon: <Server className="w-5 h-5" />,
             options: [
@@ -261,6 +269,8 @@ export default function ScaffoldPage() {
         if (!validateConfig()) return
 
         try {
+            console.log("config : ")
+            console.log(config)
             const response = await fetch('/api/scaffold', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -343,7 +353,7 @@ export default function ScaffoldPage() {
                                         {option.description}
                                     </p>
                                     <div className="space-y-1">
-                                        {option.features.map((feature, index) => (
+                                        {option.features?.map((feature: string, index: number) => (
                                             <div key={index} className="text-xs text-muted-foreground">
                                                 • {feature}
                                             </div>
