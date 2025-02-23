@@ -108,13 +108,13 @@ export async function createProject(projectName, options) {
     // Authentication setup
     if (options.auth !== 'Skip') {
       spinner.text = 'Setting up authentication...';
-      switch(options.auth) {
+      switch(options.auth ) {
         case 'JWT':
           await jwtAuthts(config, projectDir,emitLog);
           break;
-        case 'NextAuth':
-          await setupNextAuth(config, projectDir,emitLog);
-          break;
+        // case 'NextAuth':
+        //   await setupNextAuth(config, projectDir,emitLog);
+        //   break;
         case 'Passport':
           await setupPassport(config, projectDir,emitLog  );
           break;
