@@ -1,18 +1,16 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { JSX } from "react";
-import { Providers } from "./providers";
-import { Sidebar } from "@/components/Sidebar";
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-});
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "Stack'd - Full Stack Project Generator",
+  description: "Generate full-stack applications with ease",
+};
 
 export default function RootLayout({
   children,
@@ -20,16 +18,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <html lang="en" className="bg-[#ebe6e6]">
-     
-      <Providers>
-        <body className={`${geistSans.variable} ${geistMono.variable}`}  >
-          <div className="min-w-screen min-h-screen flex">
-            <Sidebar />
-            {children}
-          </div>
-        </body>
-      </Providers>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <main>{children}</main>
+          <Toaster />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
