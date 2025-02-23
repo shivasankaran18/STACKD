@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } f
+  auth: string | 'Skip' | null;rom '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { Layout, Server, Database, FolderOpen } from 'lucide-react';
+import { Layout, Server, Database, FolderOpen, GitBranch } from 'lucide-react';
 import { Steps } from '@/components/ui/steps';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
@@ -18,9 +19,8 @@ interface ProjectConfig {
   backend: string | 'Skip' | null;
   database: string | 'Skip' | null;
   orm: string | 'Skip' | null;
-  auth: string | 'Skip' | null;
   dbUrl: string;
-  giturl: string | null;
+  giturl: string | 'Skip' | null;
 }
 
 const SkipButton = ({ onSkip }: { onSkip: () => void }) => (
@@ -34,10 +34,10 @@ const SkipButton = ({ onSkip }: { onSkip: () => void }) => (
 );
 
 const Navbar = () => (
-  <nav className="border-b bg-black/5 backdrop-blur-sm">
+  <nav className="navbar backdrop-blur-sm">
     <div className="max-w-6xl mx-auto px-8 py-3 flex justify-center">
       <div className="flex flex-col items-center">
-        <pre className="text-cyan-500 text-xs leading-none">
+        <pre className="text-cyan-500 text-xs leading-none font-bold">
 {`     ██████╗████████╗ █████╗  ██████╗██╗  ██╗'██████╗ 
     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝██╔══██╗
     ╚█████╗    ██║   ███████║██║     █████═╝ ██║  ██║
@@ -45,7 +45,7 @@ const Navbar = () => (
     ██████╔╝   ██║   ██║  ██║╚██████╗██║  ██╗██████╔╝
     ╚═════╝    ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═════╝`}
         </pre>
-        <p className="text-sm text-muted-foreground mt-2">Full Stack Project Generator</p>
+        <p className="text-sm text-cyan-500/80 mt-2">Full Stack Project Generator</p>
       </div>
       
       <a 
@@ -208,6 +208,29 @@ const ScaffoldPage = () => {
           </div>
         </div>
       ) : null
+    },
+    {
+      title: "Repository",
+      description: "Add Git repository",
+      icon: <GitBranch className="w-5 h-5" />,
+      component: (
+        <div className="space-y-4 w-full max-w-md">
+          <div>
+            <Label htmlFor="giturl">Git Repository URL</Label>
+            <div className="space-y-2">
+              <Input
+                id="giturl"
+                placeholder="https://github.com/username/repository"
+                value={config.giturl || ''}
+                onChange={(e) => setConfig(prev => ({ ...prev, giturl: e.target.value }))}
+              />
+              <p className="text-sm text-muted-foreground">
+                Enter the URL of your Git repository (optional)
+              </p>
+            </div>
+          </div>
+        </div>
+      )
     }
   ];
 
@@ -308,27 +331,29 @@ const ScaffoldPage = () => {
               </div>
             ) : (
               <div className="relative">
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid md:grid-cols-3 gap-4 card-grid">
                   {steps[step]?.options?.filter(option => option.id !== 'Skip').map((option) => (
                     <Card
                       key={option.id}
-                      className={`p-4 cursor-pointer transition-all hover:shadow-lg ${
+                      className={`card p-4 cursor-pointer interactive-element ${
                         config[steps[step]?.title.toLowerCase() as keyof ProjectConfig] === option.id
-                          ? 'border-primary bg-primary/5'
-                          : 'hover:border-primary/50'
+                          ? 'border-primary/50 bg-primary/5 card-selected'
+                          : ''
                       }`}
                       onClick={() => handleSelect(steps[step]?.title.toLowerCase() as keyof ProjectConfig, option.id)}
                     >
-                      <h3 className="font-medium mb-2 text-lg">{option.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        {option.description}
-                      </p>
-                      <div className="space-y-1">
-                        {option.features.map((feature, index) => (
-                          <div key={index} className="text-xs text-muted-foreground flex items-center gap-1">
-                            <span className="text-primary">•</span> {feature}
-                          </div>
-                        ))}
+                      <div className="relative z-10">
+                        <h3 className="font-medium mb-2 text-lg">{option.name}</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          {option.description}
+                        </p>
+                        <div className="space-y-1">
+                          {option.features.map((feature, index) => (
+                            <div key={index} className="text-xs text-muted-foreground flex items-center gap-1">
+                              <span className="text-primary">•</span> {feature}
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </Card>
                   ))}
@@ -346,30 +371,39 @@ const ScaffoldPage = () => {
                 Previous
               </Button>
 
-              <div className="flex gap-2">
-                {step > 0 && step < steps.length - 1 && (
-                  <SkipButton
-                    onSkip={() => handleSelect(
-                      steps[step]?.title.toLowerCase() as keyof ProjectConfig,
-                      'Skip'
-                    )}
-                  />
-                )}
-
-                {step === steps.length - 1 ? (
-                  <Button onClick={handleGenerate} className="px-6">
-                    Generate Project
-                  </Button>
-                ) : (
+              {step === steps.length - 1 ? (
+                <Button onClick={handleGenerate} className="px-6">
+                  Generate Project
+                </Button>
+              ) : (
+                <div className="flex gap-2">
+                  {step > 0 && !steps[step].component && (
+                    <SkipButton
+                      onSkip={() => handleSelect(
+                        steps[step]?.title.toLowerCase() as keyof ProjectConfig,
+                        'Skip'
+                      )}
+                    />
+                  )}
                   <Button
-                    onClick={() => setStep(Math.min(steps.length - 1, step + 1))}
-                    disabled={step === 0 ? !config.projectName || !config.projectPath : !config[steps[step]?.title.toLowerCase() as keyof ProjectConfig]}
+                    onClick={() => {
+                      if (steps[step].component) {
+                        // For component-based steps (like Repository URL)
+                        if (step === steps.findIndex(s => s.title === "Repository")) {
+                          setConfig(prev => ({ ...prev, giturl: prev.giturl || 'Skip' }));
+                        }
+                        setStep(step + 1);
+                      } else {
+                        setStep(Math.min(steps.length - 1, step + 1));
+                      }
+                    }}
+                    disabled={step === 0 ? !config.projectName || !config.projectPath : (!steps[step].component && !config[steps[step]?.title.toLowerCase() as keyof ProjectConfig])}
                     className="px-6"
                   >
                     Next
                   </Button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

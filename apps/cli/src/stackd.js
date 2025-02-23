@@ -54,12 +54,13 @@ program
     console.log(chalk.bgCyan.white.bold('\n  💫 Let\'s create something awesome!  \n'));
     console.log(createBorder() + '\n');
 
-    const answers = await inquirer.prompt([
+    // Step 1: Project Settings
+    const projectSettings = await inquirer.prompt([
       {
         type: 'input',
         name: 'projectPath',
         message: chalk.magenta.bold('📁 Where do you want to create the project?'),
-        default: process.cwd(),
+
       },
       {
         type: 'number',
@@ -72,11 +73,15 @@ program
         name: 'backendPort',
         message: chalk.green.bold('⚙️  Enter backend port:'),
         default: 3001,
-      },
+      }
+    ]);
+
+    // Step 2: Frontend Selection
+    const frontendChoice = await inquirer.prompt([
       {
         type: 'list',
         name: 'frontend',
-        message: chalk.yellow.bold('🎨 Choose a frontend framework (optional):'),
+        message: chalk.yellow.bold('🎨 Choose a frontend framework:'),
         choices: [
           chalk.blue(CHOICES.REACT_TS),
           chalk.blue(CHOICES.REACT_JS),
@@ -86,13 +91,17 @@ program
           CHOICES.SKIP
         ],
         default: CHOICES.SKIP,
-      },
+      }
+    ]);
+
+    // Step 3: Backend Selection
+    const backendChoice = await inquirer.prompt([
       {
         type: 'list',
         name: 'backend',
-        message: chalk.cyan.bold('🛠️  Choose a backend framework (optional):'),
+        message: chalk.cyan.bold('🛠️  Choose a backend framework:'),
         choices: (answers) => {
-          if (answers.frontend === chalk.green(CHOICES.DJANGO_TEMPLATES)) {
+          if (frontendChoice.frontend === chalk.green(CHOICES.DJANGO_TEMPLATES)) {
             return [chalk.green(CHOICES.DJANGO)];
           }
           return [
@@ -103,35 +112,49 @@ program
           ];
         },
         default: chalk.blue(CHOICES.EXPRESS_TS),
-      },
+      }
+    ]);
+
+    // Step 4: Database Selection
+    const databaseChoice = await inquirer.prompt([
       {
         type: 'list',
         name: 'database',
-        message: chalk.magenta.bold('🗄️  Choose a database (optional):'),
+        message: chalk.magenta.bold('🗄️  Choose a database:'),
         choices: [
           chalk.blue(CHOICES.POSTGRESQL),
           chalk.green(CHOICES.MONGODB),
           CHOICES.SKIP
         ],
         default: CHOICES.SKIP,
-      },
-      {
-        type: 'list',
-        name: 'orm',
-        message: chalk.yellow.bold('🔗 Choose an ORM (optional):'),
-        choices: (answers) => {
-          const cleanDatabase = answers.database.replace(/\u001b\[\d+m/g, '').trim();
-          if (cleanDatabase === CHOICES.SKIP) return [CHOICES.SKIP];
-          return cleanDatabase === CHOICES.POSTGRESQL
-            ? [chalk.magenta(CHOICES.PRISMA), chalk.cyan(CHOICES.DRIZZLE), CHOICES.SKIP]
-            : [chalk.green(CHOICES.MONGOOSE), CHOICES.SKIP];
-        },
-        default: CHOICES.SKIP,
-      },
+      }
+    ]);
+
+    // Step 5: ORM Selection (only if database is selected)
+    let ormChoice = { orm: CHOICES.SKIP };
+    if (databaseChoice.database !== CHOICES.SKIP) {
+      ormChoice = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'orm',
+          message: chalk.yellow.bold('🔗 Choose an ORM:'),
+          choices: () => {
+            const cleanDatabase = databaseChoice.database.replace(/\u001b\[\d+m/g, '').trim();
+            return cleanDatabase === CHOICES.POSTGRESQL
+              ? [chalk.magenta(CHOICES.PRISMA), chalk.cyan(CHOICES.DRIZZLE), CHOICES.SKIP]
+              : [chalk.green(CHOICES.MONGOOSE), CHOICES.SKIP];
+          },
+          default: CHOICES.SKIP,
+        }
+      ]);
+    }
+
+    // Step 6: Authentication Selection
+    const authChoice = await inquirer.prompt([
       {
         type: 'list',
         name: 'auth',
-        message: chalk.cyan.bold('🔐 Choose an authentication method (optional):'),
+        message: chalk.cyan.bold('🔐 Choose an authentication method:'),
         choices: [
           chalk.yellow(CHOICES.JWT),
           chalk.blue(CHOICES.NEXTAUTH),
@@ -139,79 +162,44 @@ program
           CHOICES.SKIP
         ],
         default: CHOICES.SKIP,
-      },
-      {
-        type: 'input',
-        name: 'dbUrl',
-        message: chalk.green.bold('🔌 Enter database connection URL:'),
-        when: (answers) => {
-          const cleanDatabase = answers.database.replace(/\u001b\[\d+m/g, '').trim();
-          return cleanDatabase !== CHOICES.SKIP;
-        },
-      },
+      }
     ]);
-  
+
+    // Step 7: Database URL (only if database is selected)
+    let dbUrlChoice = { dbUrl: '' };
+    if (databaseChoice.database !== CHOICES.SKIP) {
+      dbUrlChoice = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'dbUrl',
+          message: chalk.green.bold('🔌 Enter database connection URL:'),
+        }
+      ]);
+    }
+
+    // Combine all answers
+    const answers = {
+      ...projectSettings,
+      ...frontendChoice,
+      ...backendChoice,
+      ...databaseChoice,
+      ...ormChoice,
+      ...authChoice,
+      ...dbUrlChoice,
+    };
+
+    // Clean the answers (remove color codes)
     const cleanAnswers = Object.entries(answers).reduce((acc, [key, value]) => {
       if (typeof value === 'string') {
         const cleanValue = value.replace(/\u001b\[\d+m/g, '').trim();
-        
-        switch (key) {
-          case 'frontend':
-            acc[key] = Object.values(CHOICES).find(choice => choice === cleanValue) || cleanValue;
-            break;
-          case 'backend':
-            acc[key] = Object.values(CHOICES).find(choice => choice === cleanValue) || cleanValue;
-            break;
-          case 'database':
-            acc[key] = Object.values(CHOICES).find(choice => choice === cleanValue) || cleanValue;
-            break;
-          case 'orm':
-            acc[key] = Object.values(CHOICES).find(choice => choice === cleanValue) || cleanValue;
-            break;
-          case 'auth':
-            acc[key] = Object.values(CHOICES).find(choice => choice === cleanValue) || cleanValue;
-            break;
-          default:
-            acc[key] = cleanValue;
-        }
+        acc[key] = cleanValue;
       } else {
         acc[key] = value;
       }
       return acc;
     }, {});
 
-    const cleanAnswers = Object.entries(answers).reduce((acc, [key, value]) => {
-      if (typeof value === 'string') {
-  
-        const cleanValue = value.replace(/\u001b\[\d+m/g, '').trim();
-        
- 
-        switch (key) {
-          case 'frontend':
-            acc[key] = Object.values(CHOICES).find(choice => choice === cleanValue) || cleanValue;
-            break;
-          case 'backend':
-            acc[key] = Object.values(CHOICES).find(choice => choice === cleanValue) || cleanValue;
-            break;
-          case 'database':
-            acc[key] = Object.values(CHOICES).find(choice => choice === cleanValue) || cleanValue;
-            break;
-          case 'orm':
-            acc[key] = Object.values(CHOICES).find(choice => choice === cleanValue) || cleanValue;
-            break;
-          case 'auth':
-            acc[key] = Object.values(CHOICES).find(choice => choice === cleanValue) || cleanValue;
-            break;
-          default:
-            acc[key] = cleanValue;
-        }
-      } else {
-        acc[key] = value;
-      }
-      return acc;
-    }, {});
-
-    
+    // Validate combinations
     if (cleanAnswers.database !== 'Skip' && cleanAnswers.orm !== 'Skip') {
       if (cleanAnswers.database === 'MongoDB' && cleanAnswers.orm !== 'Mongoose') {
         console.log('\n' + createBorder());
@@ -227,7 +215,7 @@ program
       }
     }
 
- 
+    // Handle Django Templates special case
     if (cleanAnswers.frontend === 'Django Templates') {
       cleanAnswers.backend = 'Django';
     }

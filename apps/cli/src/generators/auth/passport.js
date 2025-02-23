@@ -1,69 +1,39 @@
-import { mkdir, writeFile } from 'fs/promises';
-import { join } from 'path';
-import { readFile } from 'fs/promises';
+import { join } from 'node:path'
+import { mkdir, writeFile } from 'node:fs/promises'
 
-export async function passportAuth(config, projectDir) {
-    console.log("Setting up Passport.js authentication...");
-    
-    const backendDir = join(projectDir, 'backend');
-    
-    console.log("Adding Passport dependencies...");
-    const packageJsonPath = join(backendDir, 'package.json');
-    const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
+export async function setupPassport(config, projectDir,emitLog) {
+    emitLog('Setting up Passport...');
+    try {
+        const backendDir = join(projectDir, 'backend');
+        const authDir = join(backendDir, 'src', 'auth');
+        const configDir = join(backendDir, 'src', 'config');
+        emitLog('Creating auth and config directories...');
+        await mkdir(authDir, { recursive: true });
+        await mkdir(configDir, { recursive: true });
 
-    packageJson.dependencies = {
-        ...packageJson.dependencies,
-        "passport": "^0.6.0",
-        "passport-local": "^1.0.0",
-        "passport-jwt": "^4.0.1",
-        "bcryptjs": "^2.4.3",
-        "express-session": "^1.17.3"
-    };
-
-    packageJson.devDependencies = {
-        ...packageJson.devDependencies,
-        "@types/passport": "^1.0.12",
-        "@types/passport-local": "^1.0.35",
-        "@types/passport-jwt": "^3.0.9",
-        "@types/bcryptjs": "^2.4.2",
-        "@types/express-session": "^1.17.7"
-    };
-
-    await writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
-
-    console.log("Creating Passport configuration...");
-    const passportConfig = `
+        const passportConfigCode = `
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
-import { Strategy as JWTStrategy, ExtractJwt } from 'passport-jwt';
-import bcrypt from 'bcryptjs';
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { User } from '../models/user.model';
+import { config } from '../config';
 
-interface User {
-    id: number;
-    email: string;
-    password: string;
-}
-
-const users: User[] = [];
-
+// Local Strategy
 passport.use(new LocalStrategy(
-    {
-        usernameField: 'email',
-        passwordField: 'password'
-    },
+    { usernameField: 'email' },
     async (email, password, done) => {
         try {
-            const user = users.find(u => u.email === email);
-            
+            const user = await User.findOne({ email });
             if (!user) {
-                return done(null, false, { message: 'User not found' });
+                return done(null, false, { message: 'Incorrect email.' });
             }
-
-            const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) {
-                return done(null, false, { message: 'Incorrect password' });
+            
+            const isValid = await user.comparePassword(password);
+            if (!isValid) {
+                return done(null, false, { message: 'Incorrect password.' });
             }
-
+            
             return done(null, user);
         } catch (error) {
             return done(error);
@@ -71,131 +41,194 @@ passport.use(new LocalStrategy(
     }
 ));
 
-passport.use(new JWTStrategy(
+// JWT Strategy
+passport.use(new JwtStrategy(
     {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        secretOrKey: process.env.JWT_SECRET || 'your-secret-key'
+        secretOrKey: config.jwt.secret,
     },
     async (payload, done) => {
         try {
-            const user = users.find(u => u.id === payload.id);
+            const user = await User.findById(payload.sub);
             if (!user) {
                 return done(null, false);
             }
             return done(null, user);
         } catch (error) {
-            return done(error);
+            return done(error, false);
         }
     }
 ));
 
+// Google OAuth Strategy
+passport.use(new GoogleStrategy(
+    {
+        clientID: config.google.clientId,
+        clientSecret: config.google.clientSecret,
+        callbackURL: '/auth/google/callback',
+    },
+    async (accessToken, refreshToken, profile, done) => {
+        try {
+            let user = await User.findOne({ googleId: profile.id });
+            
+            if (!user) {
+                user = await User.create({
+                    googleId: profile.id,
+                    email: profile.emails?.[0]?.value,
+                    name: profile.displayName,
+                });
+            }
+            
+            return done(null, user);
+        } catch (error) {
+            return done(error, false);
+        }
+    }
+));
+
+// Serialization
 passport.serializeUser((user: any, done) => {
     done(null, user.id);
 });
 
-passport.deserializeUser((id: number, done) => {
-    const user = users.find(u => u.id === id);
-    done(null, user);
-});
-
-export default passport;`;
-
-    const configDir = join(backendDir, 'src', 'config');
-    await mkdir(configDir, { recursive: true });
-    await writeFile(
-        join(configDir, 'passport.ts'),
-        passportConfig.trim()
-    );
-
-    console.log("Creating authentication routes...");
-    const authRoutes = `
-import { Router } from 'express';
-import passport from 'passport';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-
-const router = Router();
-
-const users: any[] = [];
-
-router.post('/register', async (req, res) => {
+passport.deserializeUser(async (id: string, done) => {
     try {
-        const { email, password } = req.body;
-
-        if (users.find(u => u.email === email)) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(password, salt);
-
-        const user = {
-            id: users.length + 1,
-            email,
-            password: hash
-        };
-        users.push(user);
-
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'your-secret-key');
-        res.json({ token });
+        const user = await User.findById(id);
+        done(null, user);
     } catch (error) {
-        res.status(500).json({ message: 'Error registering user' });
+        done(error);
     }
 });
 
-router.post('/login', passport.authenticate('local', { session: false }), (req, res) => {
-    const token = jwt.sign({ id: req.user.id }, process.env.JWT_SECRET || 'your-secret-key');
-    res.json({ token });
+export default passport;
+`;
+        emitLog('Writing passport.config.ts...');
+        await writeFile(
+            join(authDir, 'passport.config.ts'),
+            passportConfigCode.trim() + '\n'
+        );
+        emitLog('Creating authentication middleware...');
+        const authMiddlewareCode = `
+import { Request, Response, NextFunction } from 'express';
+import passport from 'passport';
+import jwt from 'jsonwebtoken';
+import { config } from '../config';
+
+export const authenticateJWT = passport.authenticate('jwt', { session: false });
+
+export const authenticateLocal = (req: Request, res: Response, next: NextFunction) => {
+    passport.authenticate('local', { session: false }, (err, user, info) => {
+        if (err) {
+            return next(err);
+        }
+        if (!user) {
+            return res.status(401).json({ message: info?.message || 'Authentication failed' });
+        }
+        
+        const token = jwt.sign({ sub: user.id }, config.jwt.secret, {
+            expiresIn: config.jwt.expiresIn,
+        });
+        
+        req.user = user;
+        res.locals.token = token;
+        next();
+    })(req, res, next);
+};
+
+export const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.status(401).json({ message: 'Unauthorized' });
+};
+`;
+        emitLog('Writing middleware.ts...');
+        await writeFile(
+            join(authDir, 'middleware.ts'),
+            authMiddlewareCode.trim() + '\n'
+        );
+        emitLog('Creating authentication routes...');
+        const authRoutesCode = `
+import { Router } from 'express';
+import passport from 'passport';
+import { authenticateLocal } from './middleware';
+
+const router = Router();
+
+router.post('/login', authenticateLocal, (req, res) => {
+    res.json({
+        user: req.user,
+        token: res.locals.token,
+    });
 });
 
-router.get('/profile', passport.authenticate('jwt', { session: false }), (req, res) => {
-    res.json(req.user);
+router.post('/register', async (req, res) => {
+    // Add your registration logic here
 });
 
-export default router;`;
+router.get('/google',
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+);
 
-    const routesDir = join(backendDir, 'src', 'routes');
-    await mkdir(routesDir, { recursive: true });
-    await writeFile(
-        join(routesDir, 'auth.ts'),
-        authRoutes.trim()
-    );
+router.get('/google/callback',
+    passport.authenticate('google', { session: false }),
+    (req, res) => {
+        // Handle successful authentication
+        res.redirect('/');
+    }
+);
 
-    console.log("Updating main application file...");
-    const mainAppUpdate = `
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import session from 'express-session';
-import passport from './config/passport';
-import authRoutes from './routes/auth';
+router.post('/logout', (req, res) => {
+    req.logout();
+    res.json({ message: 'Logged out successfully' });
+});
 
-dotenv.config();
+export default router;
+`;
+        emitLog('Writing routes.ts...');
+        await writeFile(
+            join(authDir, 'routes.ts'),
+            authRoutesCode.trim() + '\n'
+        );
+        emitLog('Creating configuration file...');
+        const configCode = `
+export const config = {
+    jwt: {
+        secret: process.env.JWT_SECRET || 'your-secret-key',
+        expiresIn: '1d',
+    },
+    google: {
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    },
+    session: {
+        secret: process.env.SESSION_SECRET || 'session-secret',
+    },
+};
+`;
+        emitLog('Writing index.ts...');
+        await writeFile(
+            join(configDir, 'index.ts'),
+            configCode.trim() + '\n'
+        );
+        emitLog('Adding environment variables...');
+        const envContent = `
+# Authentication
+JWT_SECRET=your-jwt-secret-key
+SESSION_SECRET=your-session-secret
 
-const app = express();
-const port = process.env.PORT || ${config.backendPort};
-
-app.use(cors());
-app.use(express.json());
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
-    resave: false,
-    saveUninitialized: false
-}));
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.use('/api/auth', authRoutes);
-
-app.listen(port, () => {
-    console.log(\`Server running on port \${port}\`);
-});`;
-
-    await writeFile(
-        join(backendDir, 'src', 'index.ts'),
-        mainAppUpdate.trim()
-    );
-
-    console.log("Passport.js authentication setup completed!");
+# Google OAuth
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+`;
+        emitLog('Writing .env file...');
+        await writeFile(
+            join(backendDir, '.env'),
+            envContent.trim() + '\n'
+        );
+        emitLog('✅ Passport.js setup completed successfully!');
+    } catch (error) {
+        emitLog(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw error;
+    }
 }

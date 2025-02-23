@@ -1,183 +1,83 @@
-import { mkdir, writeFile } from 'fs/promises';
-import { join } from 'path';
-import { readFile } from 'fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import fs from 'fs';
 
-export async function jwtAuth(config, projectDir) {
-    console.log("Setting up JWT authentication...");
-    
-    const backendDir = join(projectDir, 'backend');
-    const middlewareDir = join(backendDir, 'src', 'middleware');
-    const routesDir = join(backendDir, 'src', 'routes');
+export async function jwtAuthts(config, projectDir,emitLog) {
+    emitLog('Installing jsonwebtoken...');
+    const packageJsonPath = join(projectDir, 'backend','package.json');
+    const jsonData = await JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    emitLog('Updating package.json...');
+    jsonData.dependencies = jsonData.dependencies || {};
+    jsonData.dependencies["jsonwebtoken"] = "^9.0.2";
 
-    await mkdir(middlewareDir, { recursive: true });
-    await mkdir(routesDir, { recursive: true });
+    fs.writeFileSync(packageJsonPath, JSON.stringify(jsonData, null, 2), 'utf8');
+    emitLog('Writing jwt.ts...');
+    const jwtAuthFile = `
+    const jwt = require('jsonwebtoken');
+export const authenticateToken = (req:any, res:any, next:any) => {
+    const token = req.header('Authorization')?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Access Denied' });
 
-    console.log("Adding JWT dependencies...");
-    const packageJsonPath = join(backendDir, 'package.json');
-    const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
-
-    packageJson.dependencies = {
-        ...packageJson.dependencies,
-        "jsonwebtoken": "^9.0.2",
-        "bcryptjs": "^2.4.3"
-    };
-
-    packageJson.devDependencies = {
-        ...packageJson.devDependencies,
-        "@types/jsonwebtoken": "^9.0.2",
-        "@types/bcryptjs": "^2.4.2"
-    };
-
-    await writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
-
-    console.log("Creating JWT middleware...");
-    const jwtMiddleware = `
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-
-interface AuthRequest extends Request {
-    user?: any;
-}
-
-export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'Access Denied' });
-    }
-
-    try {
-        const verified = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-        req.user = verified;
+    jwt.verify(token, process.env.JWT_SECRET, (err:any, user:any) => {
+        if (err) return res.status(403).json({ error: 'Invalid Token' });
+        req.user = user;
         next();
-    } catch (err) {
-        res.status(403).json({ error: 'Invalid Token' });
-    }
+    });
 };
-
-export const generateToken = (payload: any) => {
-    return jwt.sign(payload, process.env.JWT_SECRET || 'your-secret-key', { expiresIn: '1h' });
-};`;
-
-    await writeFile(
-        join(middlewareDir, 'auth.ts'),
-        jwtMiddleware.trim()
-    );
-
-    console.log("Creating authentication routes...");
-    const authRoutes = `
-import { Router } from 'express';
-import bcrypt from 'bcryptjs';
-import { authenticateToken, generateToken } from '../middleware/auth';
-
-const router = Router();
-
-const users: any[] = [];
-
-router.post('/register', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        if (users.find(u => u.email === email)) {
-            return res.status(400).json({ error: 'User already exists' });
-        }
-
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        const user = {
-            id: users.length + 1,
-            email,
-            password: hashedPassword
-        };
-        users.push(user);
-
-        const token = generateToken({ id: user.id, email: user.email });
-
-        res.json({ token });
-    } catch (error) {
-        res.status(500).json({ error: 'Error creating user' });
-    }
-});
-
-router.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        const user = users.find(u => u.email === email);
-        if (!user) {
-            return res.status(400).json({ error: 'User not found' });
-        }
-
-        const validPassword = await bcrypt.compare(password, user.password);
-        if (!validPassword) {
-            return res.status(400).json({ error: 'Invalid password' });
-        }
-
-        const token = generateToken({ id: user.id, email: user.email });
-
-        res.json({ token });
-    } catch (error) {
-        res.status(500).json({ error: 'Error logging in' });
-    }
-});
-
-router.get('/me', authenticateToken, (req, res) => {
-    res.json(req.user);
-});
-
-export default router;`;
-
-    await writeFile(
-        join(routesDir, 'auth.ts'),
-        authRoutes.trim()
-    );
-
-    console.log("Updating main application file...");
-    const mainAppUpdate = `
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import authRoutes from './routes/auth';
-import { authenticateToken } from './middleware/auth';
-
-dotenv.config();
-
-const app = express();
-const port = process.env.PORT || ${config.backendPort};
-
-app.use(cors());
-app.use(express.json());
-app.use('/api/auth', authRoutes);
-
-app.get('/api/protected', authenticateToken, (req, res) => {
-    res.json({ message: 'This is a protected route', user: req.user });
-});
-
-app.get('/api/public', (req, res) => {
-    res.json({ message: 'This is a public route' });
-});
-
-app.listen(port, () => {
-    console.log(\`Server running on port \${port}\`);
-});`;
-
-    await writeFile(
-        join(backendDir, 'src', 'index.ts'),
-        mainAppUpdate.trim()
-    );
-
-    console.log("Setting up environment configuration...");
-    const envContent = `
-JWT_SECRET=your-secret-key-change-this-in-production
-PORT=${config.backendPort}
 `;
+    emitLog('Writing middleware.ts...');
+    const middlewareDir = join(projectDir, 'backend', 'src', 'middleware');
+    await mkdir(middlewareDir, { recursive: true });
+    emitLog('Writing middleware.ts...');    
+    await writeFile(join(middlewareDir, 'middleware.ts'), jwtAuthFile, 'utf8');
+    emitLog('✅ JWT authentication setup completed successfully!');
+}
+  
+export async function jwtAuthdjango(config , projectDir ,emitLog) {
+    emitLog('Installing jsonwebtoken...');
+    const settingsPath = join(projectDir, 'backend', 'core', 'settings.py');
+    emitLog('Updating settings.py...');
+    try {
+        let settingsContent = fs.readFileSync(settingsPath, 'utf8');
+        const restFrameworkSettings = `
 
-    await writeFile(
-        join(backendDir, '.env'),
-        envContent.trim() + '\n'
-    );
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
+`;
+        
+        const installedAppsIndex = settingsContent.indexOf('INSTALLED_APPS');
+        const insertPosition = settingsContent.indexOf(']', installedAppsIndex) + 1;
+        
+        settingsContent = 
+            settingsContent.slice(0, insertPosition) + 
+            restFrameworkSettings + 
+            settingsContent.slice(insertPosition);
+        
+        fs.writeFileSync(settingsPath, settingsContent, 'utf8');
+        emitLog('Writing urls.py...');
+        let urlsContent = fs.readFileSync(`${projectDir}/backend/core/urls.py`, 'utf8');
+        const newUrlsContent = `from django.contrib import admin
+from django.urls import path, include
+from rest_framework_simplejwt import views as jwt_views
 
-    console.log("JWT authentication setup completed!");
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/token/', 
+         jwt_views.TokenObtainPairView.as_view(), 
+         name='token_obtain_pair'),
+    path('api/token/refresh/', 
+         jwt_views.TokenRefreshView.as_view(), 
+         name='token_refresh'),
+    path('', include('main.urls')),
+]
+`;
+        fs.writeFileSync(`${projectDir}/backend/core/urls.py`, newUrlsContent, 'utf8');
+        emitLog('✅ JWT authentication setup completed successfully!');
+    } catch (error) { 
+        console.error('Error configuring Django settings:', error);
+        throw error;
+    }
 }

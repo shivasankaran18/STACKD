@@ -2,8 +2,8 @@ import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { execSync } from 'child_process';
 
-export async function createReactJS(config, projectDir) {
-    console.log("Creating React JavaScript frontend...");
+export async function createReactJS(config, projectDir,emitLog) {
+    emitLog("Creating React JavaScript frontend...");
     
     await execSync(`npm create vite@latest frontend -- --template react`, {
         cwd: projectDir,
@@ -11,7 +11,7 @@ export async function createReactJS(config, projectDir) {
         shell: true
     });
 
-    console.log("Installing dependencies...");
+    emitLog("Installing dependencies...");
     await execSync('npm install', {
         cwd: join(projectDir, 'frontend'),
         stdio: 'inherit',

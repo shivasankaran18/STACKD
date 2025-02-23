@@ -1,43 +1,33 @@
-import { join } from 'path';
-import { mkdir, writeFile } from 'fs/promises';
-import { execSync } from 'child_process';
+import { join } from 'node:path'
+import { mkdir, writeFile } from 'node:fs/promises'
+import 'dotenv/config'
 
-export async function setupDrizzle(config, projectDir) {
-    console.log("Setting up Drizzle ORM...");
+export async function setupDrizzle(config, projectDir, emitLog) {
+    try {
+        emitLog('Starting Drizzle ORM setup...');
+        const backendDir = join(projectDir, 'backend');
+        const dbDir = join(backendDir, 'src', 'db');
+        const schemasDir = join(dbDir, 'schema');
+        emitLog('Creating directory structure...');
+        await mkdir(schemasDir, { recursive: true });
+        emitLog('✅ Directory structure created');
 
-    const backendDir = join(projectDir, 'backend');
-    const dbDir = join(backendDir, 'src', 'db');
-    const schemasDir = join(dbDir, 'schema');
-
-    console.log("Creating directory structure...");
-    await mkdir(schemasDir, { recursive: true });
-
-    console.log("Setting up environment configuration...");
-    const envContent = `
+        emitLog('Generating environment configuration...');
+        const envContent = `
 # Database Configuration
 ${config.env?.DATABASE_URL_ENV || 'DATABASE_URL'}=postgres://user:password@localhost:5432/${config.databaseName || 'myapp'}
 # Add other environment variables here
 NODE_ENV=development
 PORT=3000
 `;
-    await writeFile(
-        join(backendDir, '.env'),
-        envContent.trim() + '\n'
-    );
+        await writeFile(
+            join(backendDir, '.env'),
+            envContent.trim() + '\n'
+        );
+        emitLog('✅ Environment configuration created');
 
-    console.log("Installing Drizzle dependencies...");
-    await execSync('npm install drizzle-orm pg', {
-        cwd: backendDir,
-        stdio: 'inherit'
-    });
-
-    await execSync('npm install -D drizzle-kit @types/pg', {
-        cwd: backendDir,
-        stdio: 'inherit'
-    });
-
-    console.log("Setting up database connection...");
-    const dbCode = `
+        emitLog('Setting up database connection...');
+        const dbCode = `
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import 'dotenv/config';
@@ -61,30 +51,32 @@ export async function connectDB() {
 export async function disconnectDB() {
     await pool.end();
     console.log('Disconnected from PostgreSQL database');
-}`;
+}
+`;
+        await writeFile(
+            join(dbDir, 'index.ts'),
+            dbCode
+        );
+        emitLog('✅ Database connection setup complete');
 
-    await writeFile(
-        join(dbDir, 'index.ts'),
-        dbCode.trim()
-    );
-
-    console.log("Creating example schema...");
-    const exampleSchemaCode = `
+        emitLog('Creating example schema...');
+        const exampleSchemaCode = `
 import { pgTable, serial, varchar, timestamp } from 'drizzle-orm/pg-core';
 
 export const examples = pgTable('examples', {
     id: serial('id').primaryKey(),
     name: varchar('name', { length: 256 }).notNull(),
     createdAt: timestamp('created_at').defaultNow(),
-});`;
+});
+`;
+        await writeFile(
+            join(schemasDir, 'example.ts'),
+            exampleSchemaCode
+        );
+        emitLog('✅ Example schema created');
 
-    await writeFile(
-        join(schemasDir, 'example.ts'),
-        exampleSchemaCode.trim()
-    );
-
-    console.log("Creating Drizzle configuration...");
-    const drizzleConfigCode = `
+        emitLog('Configuring Drizzle migrations...');
+        const drizzleConfigCode = `
 import type { Config } from 'drizzle-kit';
 
 export default {
@@ -94,12 +86,17 @@ export default {
     dbCredentials: {
         connectionString: process.env.${config.env?.DATABASE_URL_ENV || 'DATABASE_URL'}!,
     },
-} satisfies Config;`;
+} satisfies Config;
+`;
+        await writeFile(
+            join(backendDir, 'drizzle.config.ts'),
+            drizzleConfigCode
+        );
+        emitLog('✅ Drizzle configuration complete');
 
-    await writeFile(
-        join(backendDir, 'drizzle.config.ts'),
-        drizzleConfigCode.trim()
-    );
-
-    console.log("Drizzle ORM setup completed!");
+        emitLog('✅ Drizzle ORM setup completed successfully!');
+    } catch (error) {
+        emitLog(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw error;
+    }
 }

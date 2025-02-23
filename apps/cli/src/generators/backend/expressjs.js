@@ -1,12 +1,11 @@
-import { execSync } from 'child_process';
-import { mkdir, writeFile } from 'fs/promises';
-import { join } from 'path';
+import { execSync } from 'node:child_process'
+import { mkdir, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
+import { writeFileSync } from 'fs'
 
 export async function createExpressJS(config, projectDir,emitLog) {
-    emitLog("Creating Express JavaScript backend...");
-    
-    await mkdir(join(projectDir, 'backend'));
-    
+    emitLog('Creating ExpressJS project...');
+    await mkdir(join(projectDir, 'backend'))
     const backendPackageJson = {
         name: "backend",
         version: "1.0.0",
@@ -22,14 +21,16 @@ export async function createExpressJS(config, projectDir,emitLog) {
         devDependencies: {
             "nodemon": "^2.0.22"
         }
-    };
+    }
 
+    emitLog('Writing package.json...');
     await writeFile(
         join(projectDir, 'backend', 'package.json'),
         JSON.stringify(backendPackageJson, null, 2)
-    );
+    )
 
-    await mkdir(join(projectDir, 'backend', 'src'));
+    emitLog('Creating src directory...');
+    await mkdir(join(projectDir, 'backend', 'src'))
 
     const backendIndex = `
 const express = require('express');
@@ -56,17 +57,16 @@ app.get('/api/health', (req, res) => {
 
 app.listen(port, () => {
     console.log(\`Server running on port \${port}\`);
-});`;
+});`
 
+    emitLog('Writing index.js...');
     await writeFile(
         join(projectDir, 'backend', 'src', 'index.js'),
         backendIndex.trim()
-    );
+    )
+    
+    emitLog('Installing dependencies...');
+    await execSync("npm install",{cwd : projectDir + '/backend',stdio : "inherit"});
 
-    emitLog("Installing backend dependencies...");
-    await execSync("npm install", {
-        cwd: join(projectDir, 'backend'),
-        stdio: 'inherit',
-        shell: true
-    });
-}
+    emitLog('✅ ExpressJS project created successfully!');
+} 

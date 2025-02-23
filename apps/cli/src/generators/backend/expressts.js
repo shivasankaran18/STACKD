@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-export async function createExpressTS(config, projectDir,emitLog) {
+export async function createExpressTS(config, projectDir ,emitLog) {
     emitLog('Creating ExpressTS project...');
     await mkdir(join(projectDir, 'backend'));
     emitLog('Writing package.json...');

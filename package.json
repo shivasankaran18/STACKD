@@ -1,13 +1,28 @@
 {
-  "name": "foss-dev",
-  "private": true,
+  "name": "@shivasankaran18/stackd",
+  "version": "6.0.0",
+  "bin": {
+    "stackd": "apps/cli/src/stackd.js",
+    "pre-install": "npm install"
+  },
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "setup": "sh start-web.sh",
+    "@types/node": "^22.13.5",
+    "chalk": "4",
+    "commander": "^13.1.0",
+    "fs": "^0.0.1-security",
+    "gradient-string": "^3.0.0",
+    "inquirer": "^12.4.2",
+    "ora": "^8.2.0",
+    "path": "^0.12.7",
+    "ts-node": "^10.9.2"
+
   },
   "devDependencies": {
     "husky": "^9.1.7",

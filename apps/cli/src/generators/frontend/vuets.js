@@ -1,15 +1,17 @@
-import { mkdir, writeFile } from 'fs/promises';
-import { join } from 'path';
-import { execSync } from 'child_process';
+import { mkdir, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
+import { execSync } from 'node:child_process'
 
-export async function createVueJS(config, projectDir) {
-    console.log("Creating Vue JavaScript frontend...");
-    
-    await execSync(`npm create vite@latest frontend -- --template vue`, {
+export async function createVueTS(config, projectDir,emitLog) {
+    emitLog('Creating VueTS project...');
+
+    emitLog('Installing Vite...');  
+    await execSync(`npm create vite@latest frontend -- --template vue-ts`, {
         cwd: projectDir,
         stdio: 'inherit'
-    });
+    })
 
+    emitLog('Configuring Vite...');
     const viteConfig = `
     import { defineConfig } from 'vite'
     import vue from '@vitejs/plugin-vue'
@@ -25,59 +27,27 @@ export async function createVueJS(config, projectDir) {
           }
         }
       }
-    })`;
+    })`
 
+    emitLog('Writing Vite configuration...');
     await writeFile(
-        join(projectDir, 'frontend', 'vite.config.js'),
+        join(projectDir, 'frontend', `vite.config.ts`),
         viteConfig.trim()
-    );
+    )
 
-    console.log("Installing additional dependencies...");
+    emitLog('Installing Vue Router and Pinia...');
     await execSync('npm install vue-router@4 pinia@2', {
         cwd: join(projectDir, 'frontend'),
         stdio: 'inherit'
-    });
+    })
 
-    await mkdir(join(projectDir, 'frontend', 'src', 'router'), { recursive: true });
-    await mkdir(join(projectDir, 'frontend', 'src', 'stores'), { recursive: true });
-    await mkdir(join(projectDir, 'frontend', 'src', 'components'), { recursive: true });
-
-    const routerSetup = `
-import { createRouter, createWebHistory } from 'vue-router'
-
-const router = createRouter({
-  history: createWebHistory(),
-  routes: [
-    {
-      path: '/',
-      component: () => import('../views/Home.vue')
+    emitLog('Installing TypeScript and other dependencies...');
+    if (config.frontend === 'vue-ts') {
+        await execSync('npm install -D @types/node', {
+            cwd: join(projectDir, 'frontend'),
+            stdio: 'inherit'
+        })
     }
-  ]
-})
 
-export default router`;
-
-    await writeFile(
-        join(projectDir, 'frontend', 'src', 'router', 'index.js'),
-        routerSetup.trim()
-    );
-
-    const storeSetup = `
-import { defineStore } from 'pinia'
-
-export const useMainStore = defineStore('main', {
-  state: () => ({
-    count: 0
-  }),
-  actions: {
-    increment() {
-      this.count++
-    }
-  }
-})`;
-
-    await writeFile(
-        join(projectDir, 'frontend', 'src', 'stores', 'main.js'),
-        storeSetup.trim()
-    );
+    emitLog('✅ VueTS project created successfully!');
 }

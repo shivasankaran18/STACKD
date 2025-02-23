@@ -1,128 +1,146 @@
-import { mkdir, writeFile } from 'fs/promises';
-import { join } from 'path';
-import { readFile } from 'fs/promises';
+import { join } from 'node:path'
+import { mkdir, writeFile } from 'node:fs/promises'
+import 'dotenv/config'
 
-export async function nextAuth(config, projectDir) {
-    console.log("Setting up NextAuth.js authentication...");
-    
-    const frontendDir = join(projectDir, 'frontend');
-
-    console.log("Adding NextAuth dependencies...");
-    const packageJsonPath = join(frontendDir, 'package.json');
-    const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
-
-    packageJson.dependencies = {
-        ...packageJson.dependencies,
-        "next-auth": "^4.24.5",
-        "@auth/prisma-adapter": "^1.0.0"
-    };
-
-    await writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
-
-    const authDir = join(frontendDir, 'src', 'app', 'api', 'auth', '[...nextauth]');
-    await mkdir(authDir, { recursive: true });
-
-    console.log("Creating NextAuth configuration...");
-    const nextAuthConfig = `
-import NextAuth from 'next-auth';
-import { PrismaAdapter } from '@auth/prisma-adapter';
-import prisma from '@/lib/prisma';
-import GithubProvider from 'next-auth/providers/github';
-import GoogleProvider from 'next-auth/providers/google';
-import CredentialsProvider from 'next-auth/providers/credentials';
-
-export const authOptions = {
-    adapter: PrismaAdapter(prisma),
+export async function setupNextAuth(config, projectDir,emitLog) {
+    try {
+        const authDir = join(projectDir, 'frontend', 'src', 'app', 'api', 'auth');
+        await mkdir(authDir, { recursive: true });
+        emitLog('Creating auth directory...');
+        const routeCode = `
+import NextAuth from "next-auth";
+import { AuthOptions } from "next-auth";
+import GithubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+export const authOptions: AuthOptions = {
     providers: [
         GithubProvider({
-            clientId: process.env.GITHUB_ID || '',
-            clientSecret: process.env.GITHUB_SECRET || '',
+            clientId: process.env.GITHUB_ID!,
+            clientSecret: process.env.GITHUB_SECRET!,
         }),
         GoogleProvider({
-            clientId: process.env.GOOGLE_ID || '',
-            clientSecret: process.env.GOOGLE_SECRET || '',
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
         }),
         CredentialsProvider({
             name: 'Credentials',
             credentials: {
-                email: { label: "Email", type: "text" },
+                email: { label: "Email", type: "email" },
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
                 // Add your credentials logic here
-                return null;
+                if (!credentials?.email || !credentials?.password) return null;
+                
+                try {
+                    // Example user verification
+                    const user = { id: "1", email: credentials.email, name: "User" };
+                    return user;
+                } catch (error) {
+                    return null;
+                }
             }
-        })
+        }),
     ],
-    session: {
-        strategy: 'jwt'
-    },
     pages: {
         signIn: '/auth/signin',
         signOut: '/auth/signout',
         error: '/auth/error',
     },
     callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id;
+            }
+            return token;
+        },
         async session({ session, token }) {
+            if (session.user) {
+                (session.user as any).id = token.id;
+            }
             return session;
         },
-        async jwt({ token, user }) {
-            return token;
-        }
-    }
+    },
+    session: {
+        strategy: "jwt",
+    },
+    secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };`;
-
-    await writeFile(
-        join(authDir, 'route.ts'),
-        nextAuthConfig.trim()
-    );
-
-    console.log("Creating auth components...");
-    const authButton = `
-'use client';
-
-import { signIn, signOut, useSession } from 'next-auth/react';
-
-export function AuthButton() {
-    const { data: session } = useSession();
-
-    if (session) {
-        return (
-            <div>
-                Signed in as {session.user?.email} <br />
-                <button onClick={() => signOut()}>Sign out</button>
-            </div>
-        );
-    }
-    return (
-        <button onClick={() => signIn()}>Sign in</button>
-    );
-}`;
-
-    const componentsDir = join(frontendDir, 'src', 'components');
-    await mkdir(componentsDir, { recursive: true });
-    await writeFile(
-        join(componentsDir, 'AuthButton.tsx'),
-        authButton.trim()
-    );
-
-    console.log("Updating environment configuration...");
-    const envContent = `
-NEXTAUTH_URL=http://localhost:${config.frontendPort}
-NEXTAUTH_SECRET=your-nextauth-secret # Change this in production
-GITHUB_ID=your-github-id
-GITHUB_SECRET=your-github-secret
-GOOGLE_ID=your-google-id
-GOOGLE_SECRET=your-google-secret
+export { handler as GET, handler as POST };
 `;
 
-    await writeFile(
-        join(frontendDir, '.env'),
-        envContent.trim() + '\n'
-    );
+        await writeFile(
+            join(authDir, 'route.ts'),
+            routeCode.trim() + '\n'
+        );
 
-    console.log("NextAuth.js setup completed!");
+        const utilsDir = join(projectDir, 'frontend', 'src', 'utils');
+        await mkdir(utilsDir, { recursive: true });
+        emitLog('Creating utils directory...');
+        const utilsCode = `
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/route";
+
+export async function getSession() {
+    return await getServerSession(authOptions);
+}
+
+export async function getCurrentUser() {
+    const session = await getSession();
+    return session?.user;
+}
+
+export async function isAuthenticated() {
+    const session = await getSession();
+    return !!session;
+}
+`;
+        emitLog('Writing utils.ts...');
+        await writeFile(
+            join(utilsDir, 'auth.ts'),
+            utilsCode.trim() + '\n'
+        );
+
+        const envContent = `
+# NextAuth Configuration
+NEXTAUTH_SECRET=your-secret-key-here
+NEXTAUTH_URL=http://localhost:${config.frontendPort}
+
+# OAuth Providers
+GITHUB_ID=your-github-id
+GITHUB_SECRET=your-github-secret
+
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+`;
+        emitLog('Writing .env file...');
+        await writeFile(
+            join(projectDir, 'frontend', '.env'),
+            envContent.trim() + '\n'
+        );
+        emitLog('Writing AuthProvider.tsx...');
+        const providerCode = `
+'use client';
+
+import { SessionProvider } from "next-auth/react";
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+    return <SessionProvider>{children}</SessionProvider>;
+}
+`;
+        emitLog('Creating components directory...');
+        const providersDir = join(projectDir, 'frontend', 'src', 'components', 'auth');
+        await mkdir(providersDir, { recursive: true });
+        await writeFile(
+            join(providersDir, 'AuthProvider.tsx'),
+            providerCode.trim() + '\n'
+        );
+        emitLog('✅ NextAuth setup completed successfully!');
+    } catch (error) {
+        emitLog(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw error;
+    }
 }
