@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+
+import { useState } from 'react'
 
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -141,7 +142,7 @@ export default function ScaffoldPage() {
                     name: 'Vue (JavaScript)',
                     description: 'Vue 3 with JavaScript template',
                     features: ['Vite', 'JavaScript', 'Vue Router', 'Pinia', 'TailwindCSS']
-
+                            
                 }
             ]
         },
