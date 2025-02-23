@@ -71,7 +71,7 @@ The GUI interface provides real-time logs from the CLI execution, helping users 
 
 - *Inquirer.js* – For interactive command-line prompts
 - *Chalk* – Provides colorful logs in the CLI
-- *Next & TypeScript* – For the GUI component
+- *React & TypeScript* – For the GUI component
 
 
 ## Installation & Setup  
@@ -79,17 +79,17 @@ The GUI interface provides real-time logs from the CLI execution, helping users 
 ### CLI Tool  
 
 ## To scaffold a new full-stack project, run:  
-sh
+```sh
 npm create @shivasankaran18/stackd new proj-name
-
+```
 This will prompt you with setup questions and generate the project with the selected configurations.
 
 ### Web Tool
 ## To launch the web-based setup tool locally, use:
-After installing the package from the npm , 
-sh
-npx @shivasankaran18/create-stackd setup
 
+``` sh
+npx @shivasankaran18/create-stackd setup
+```
 
 
 
