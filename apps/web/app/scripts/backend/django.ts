@@ -5,10 +5,8 @@ const execAsync = util.promisify(exec);
 
 export async function installDjangoDependencies(projectPath: string) {
     try {
-        // Create virtual environment
         await execAsync('python -m venv venv', { cwd: projectPath });
 
-        // Activate virtual environment and install dependencies
         const activateCmd = process.platform === 'win32' ? 
             'venv\\Scripts\\activate' : 
             'source venv/bin/activate';
@@ -16,12 +14,10 @@ export async function installDjangoDependencies(projectPath: string) {
         await execAsync(`${activateCmd} && pip install django djangorestframework django-cors-headers`, 
             { cwd: projectPath});
 
-        // Create Django project
-        await execAsync(`${activateCmd} && django-admin startproject core .`, 
+        await execAsync(`${activateCmd} && django-admin startproject myproject .`, 
             { cwd: projectPath});
 
-        // Create main app
-        await execAsync(`${activateCmd} && python manage.py startapp main`, 
+        await execAsync(`${activateCmd} && python manage.py startapp myapp`, 
             { cwd: projectPath});
 
     } catch (error) {

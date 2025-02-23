@@ -1,9 +1,6 @@
 'use client'
 
-
 import { useState, useEffect } from 'react'
-
-import { useState } from 'react'
 
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -132,7 +129,7 @@ export default function ScaffoldPage() {
                     name: 'Django Templates',
                     description: 'Django framework',
                     features: ['Full-stack', 'Django ORM', 'Django Admin']
-
+                },
                 {
                     id: 'vue-ts',
                     name: 'Vue + TypeScript',
@@ -368,16 +365,6 @@ export default function ScaffoldPage() {
                         {step === steps.length - 1 ? (
                             <Button 
                                 onClick={handleGenerate}
-                                // disabled={
-                                //     !config.projectName.trim() || 
-                                //     !config.projectPath.trim() || 
-                                //     !config.frontend || 
-                                //     !config.backend || 
-                                //     !config.database || 
-                                //     !config.orm || 
-                                //     !config.auth || 
-                                //     !config.dbUrl.trim()
-                                // }
                             >
                                 Generate Project
                             </Button>
