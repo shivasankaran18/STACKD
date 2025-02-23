@@ -12,12 +12,12 @@ import { jwtAuthts , jwtAuthdjango} from '@/app/scripts/Auth/jwt'
 import path from 'path'
 import fs from 'fs/promises'
 import { installDjangoDependencies } from '@/app/scripts/backend/django'
+import createAngularTS from '@/app/scripts/frontend/angularts'
+import simpleGit from 'simple-git'
 import { setupNextAuth } from '@/app/scripts/Auth/nextAuth'
 import { setupPassport } from '@/app/scripts/Auth/passport'
-import { setupPrisma } from '@/app/scripts/orms/prismaSetup'
-import { setupDrizzle } from '@/app/scripts/orms/drizzleSetup'
 import { setupMongoose } from '@/app/scripts/orms/mongoSetup'
-
+import { setupDrizzle } from '@/app/scripts/orms/drizzleSetup'
 export async function POST(req: NextRequest) {
     try {
         const config = await req.json()
@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
             console.log(`[Emit Logs]: ${message}`);
         };
         
+
         switch(config.frontend) {
             case 'react-ts':
                 await createReactTS(config, projectDir,emitLog)
@@ -39,15 +40,18 @@ export async function POST(req: NextRequest) {
 
             case 'django':
                 await installDjangoDependencies(projectDir);
-
+                break;
             case 'vue':
                 await createVueJS(config, projectDir,emitLog)
             case 'vue-ts':
 
                 await createVueTS(config, projectDir,emitLog)
 
-                await createVueTS(config, projectDir)
-
+                await createVueTS(config, projectDir,emitLog)
+                break
+            case 'angularts':
+                await createAngularTS(config, projectDir)
+                
                 break
             default:
                 throw new Error(`Unsupported frontend: ${config.frontend}`)
@@ -70,7 +74,7 @@ export async function POST(req: NextRequest) {
 
         switch(config.authentication) {
             case 'jwt':
-                await jwtAuth(config, projectDir,emitLog);
+                await jwtAuthts(config, projectDir,emitLog);
                 break
             case 'nextauth':
                 await setupNextAuth(config, projectDir,emitLog);
@@ -134,7 +138,7 @@ Thumbs.db
                  await jwtAuthts(config,projectDir,emitLog);
                 break;
             case 'django':
-                await jwtAuthdjango(config, projectDir,emitLog);
+                await jwtAuthdjango(config, projectDir);
                 break;
             default:
                 break;
