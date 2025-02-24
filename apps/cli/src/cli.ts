@@ -1,9 +1,34 @@
 #!/usr/bin/env node
-
 import { program } from 'commander';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
-import { createProject } from './commands/create.js';
+import { createProject } from './commands/create.js'
+
+export interface ProjectConfig {
+  projectName: string;
+  projectPath: string;
+  frontendPort: number;
+  backendPort: number;
+  frontend: string;
+  backend: string;
+  database: string;
+  orm: string;
+  auth: string;
+  dbUrl: string;
+}
+
+interface Answers {
+  projectPath: string;
+  frontendPort: number;
+  backendPort: number;
+  frontend: string;
+  backend: string;
+  database: string;
+  orm: string;
+  auth: string;
+  dbUrl: string;
+  projectName:string;
+}
 
 const showBanner = () => {
   console.log(chalk.cyan(`
@@ -46,15 +71,14 @@ const CHOICES = {
 };
 
 program
-  .command('new <projectName>')
+  .command('run ')
   .description('Create a new full-stack project')
-  .action(async (projectName) => {
-    showBanner();
-    console.log(createBorder());
-    console.log(chalk.bgCyan.white.bold('\n  💫 Let\'s create something awesome!  \n'));
-    console.log(createBorder() + '\n');
+  .action(async () => {
+    // showBanner();
+    // console.log(createBorder());
+    // console.log(chalk.bgCyan.white.bold('\n  💫 Let\'s create something awesome!  \n'));
+    // console.log(createBorder() + '\n');
 
-    // Step 1: Project Settings
     const projectSettings = await inquirer.prompt([
       {
         type: 'input',
@@ -62,6 +86,12 @@ program
         message: chalk.magenta.bold('📁 Where do you want to create the project?'),
 
       },
+      {
+        type:'input',
+        name:'projectName',
+        message:chalk.magenta.bold('💫 Enter the project name:'),
+      },
+      
       {
         type: 'number',
         name: 'frontendPort',
@@ -76,7 +106,7 @@ program
       }
     ]);
 
-    // Step 2: Frontend Selection
+    
     const frontendChoice = await inquirer.prompt([
       {
         type: 'list',
@@ -94,7 +124,7 @@ program
       }
     ]);
 
-    // Step 3: Backend Selection
+
     const backendChoice = await inquirer.prompt([
       {
         type: 'list',
@@ -115,7 +145,7 @@ program
       }
     ]);
 
-    // Step 4: Database Selection
+   
     const databaseChoice = await inquirer.prompt([
       {
         type: 'list',
@@ -130,7 +160,7 @@ program
       }
     ]);
 
-    // Step 5: ORM Selection (only if database is selected)
+
     let ormChoice = { orm: CHOICES.SKIP };
     if (databaseChoice.database !== CHOICES.SKIP) {
       ormChoice = await inquirer.prompt([
@@ -149,7 +179,7 @@ program
       ]);
     }
 
-    // Step 6: Authentication Selection
+      // Step 6: Authentication Selection
     const authChoice = await inquirer.prompt([
       {
         type: 'list',
@@ -165,7 +195,6 @@ program
       }
     ]);
 
-    // Step 7: Database URL (only if database is selected)
     let dbUrlChoice = { dbUrl: '' };
     if (databaseChoice.database !== CHOICES.SKIP) {
       dbUrlChoice = await inquirer.prompt([
@@ -177,7 +206,7 @@ program
       ]);
     }
 
-    // Combine all answers
+
     const answers = {
       ...projectSettings,
       ...frontendChoice,
@@ -188,25 +217,30 @@ program
       ...dbUrlChoice,
     };
 
-    // Clean the answers (remove color codes)
+
     const cleanAnswers = Object.entries(answers).reduce((acc, [key, value]) => {
       if (typeof value === 'string') {
         const cleanValue = value.replace(/\u001b\[\d+m/g, '').trim();
+        // @ts-ignore
         acc[key] = cleanValue;
       } else {
+        // @ts-ignore
         acc[key] = value;
       }
       return acc;
     }, {});
 
-    // Validate combinations
+
+    // @ts-ignore
     if (cleanAnswers.database !== 'Skip' && cleanAnswers.orm !== 'Skip') {
+      // @ts-ignore
       if (cleanAnswers.database === 'MongoDB' && cleanAnswers.orm !== 'Mongoose') {
         console.log('\n' + createBorder());
         console.error(chalk.bgRed.white.bold(" ❌ Error: MongoDB supports only Mongoose ORM. "));
         console.log(createBorder());
         process.exit(1);
       }
+      // @ts-ignore
       if (cleanAnswers.database === 'PostgreSQL' && !['Prisma', 'Drizzle'].includes(cleanAnswers.orm)) {
         console.log('\n' + createBorder());
         console.error(chalk.bgRed.white.bold(" ❌ Error: PostgreSQL supports only Prisma or Drizzle ORM. "));
@@ -215,19 +249,23 @@ program
       }
     }
 
-    // Handle Django Templates special case
+
+    // @ts-ignore
     if (cleanAnswers.frontend === 'Django Templates') {
+      // @ts-ignore
       cleanAnswers.backend = 'Django';
     }
+    // @ts-ignore
     if (cleanAnswers.backend === 'Django') {
+      // @ts-ignore
       cleanAnswers.frontend = 'Django Templates';
     }
 
     console.log('\n' + createBorder());
     console.log(chalk.bgGreen.black.bold("\n 📦 Creating your project... \n"));
     console.log(createBorder() + '\n');
-    
-    await createProject(projectName, cleanAnswers);
+    // @ts-ignore
+    await createProject(projectSettings.projectName, cleanAnswers);
   });
 
 program.parse(process.argv);

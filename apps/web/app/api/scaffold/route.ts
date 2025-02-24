@@ -7,7 +7,7 @@ import { createExpressTS } from '../../../../../packages/scripts/backend/express
 import { createExpressJS } from '../../../../../packages/scripts/backend/expressjs'
 import { setupPrisma } from '../../../../../packages/scripts/orms/prismaSetup'
 import { createVueJS } from '../../../../../packages/scripts/frontend/vuejs'
-import { createNextJS } from '../../../../../packages/scripts/frontend/nextjs'
+// import { createNextJS } from '../../../../../packages/scripts/frontend/nextjs'
 import { createVueTS } from '../../../../../packages/scripts/frontend/vuets'
 import { jwtAuthts , jwtAuthdjango} from '../../../../../packages/scripts/Auth/jwt'
 import path from 'path'
@@ -85,9 +85,9 @@ export async function POST(req: NextRequest) {
             case 'django':
                 await installDjangoDependencies(projectDir);
                 break
-            case 'nextjs':
-                await createNextJS(config, projectDir, emitLog);
-                break;
+            // case 'nextjs':
+            //     await createNextJS(config, projectDir, emitLog);
+            //     break;
             default:
                 throw new Error(`Unsupported backend: ${config.backend}`)
         }

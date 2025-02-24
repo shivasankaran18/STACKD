@@ -2,9 +2,10 @@
   "name": "@shivasankaran18/stackd",
   "version": "6.0.0",
   "bin": {
-    "stackd": "apps/cli/src/stackd.js",
+    "stackd": "./stackd.ts",
     "pre-install": "npm install"
   },
+  "type": "module",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -22,14 +23,16 @@
     "ora": "^8.2.0",
     "path": "^0.12.7",
     "ts-node": "^10.9.2"
-
   },
   "devDependencies": {
+    "@types/chalk": "^2.2.4",
+    "@types/commander": "^2.12.5",
+    "@types/node": "^22.13.5",
     "husky": "^9.1.7",
     "lint-staged": "^15.4.3",
     "prettier": "^3.5.0",
     "turbo": "^2.4.2",
-    "typescript": "5.7.3"
+    "typescript": "^5.7.3"
   },
   "engines": {
     "node": ">=18"
@@ -41,10 +44,11 @@
   ],
   "dependencies": {
     "@octokit/rest": "^21.1.1",
-    "@types/node": "^22.13.5",
     "chalk": "^4.1.2",
     "framer-motion": "^12.4.7",
     "fs": "^0.0.1-security",
-    "simple-git": "^3.27.0"
+    "simple-git": "^3.27.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.3"
   }
 }

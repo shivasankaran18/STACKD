@@ -1,28 +1,30 @@
 import { join } from 'path';
-import { createReactTS } from '../generators/frontend/reactts.js';
-import { createReactJS } from '../generators/frontend/reactjs.js';
-import { createVueTS } from '../generators/frontend/vuets.js';
-import { createVueJS } from '../generators/frontend/vuejs.js';
-import { createExpressTS } from '../generators/backend/expressts.js';
-import { createExpressJS } from '../generators/backend/expressjs.js';
-import { installDjangoDependencies } from '../generators/backend/django.js';
-import { setupPrisma } from '../generators/orm/prismaSetup.js';
-import { setupDrizzle } from '../generators/orm/drizzleSetup.js';
-import { setupMongoose } from '../generators/orm/mongoSetup.js';
-import { setupNextAuth } from '../generators/auth/nextAuth.js';
-import { setupPassport } from '../generators/auth/passport.js';
-import { jwtAuthts } from '../generators/auth/jwt.js';
+import { createReactTS } from '../scripts/frontend/reactts.js';
+import { createReactJS } from '../scripts/frontend/reactjs.js';
+import { createVueTS } from '../scripts/frontend/vuets.js';
+import { createVueJS } from '../scripts/frontend/vuejs.js';
+import { createExpressTS } from '../scripts/backend/expressts.js';
+import { createExpressJS } from '../scripts/backend/expressjs.js';
+import { installDjangoDependencies } from '../scripts/backend/django.js';
+import { setupPrisma } from '../scripts/orms/prismaSetup.js';
+import { setupDrizzle } from '../scripts/orms/drizzleSetup.js';
+import { setupMongoose } from '../scripts/orms/mongoSetup.js';
+import { setupNextAuth } from '../scripts/Auth/nextAuth.js';
+import { setupPassport } from '../scripts/Auth/passport.js';
+import { jwtAuthts } from '../scripts/Auth/jwt.js';
 import chalk from 'chalk';
 import ora from 'ora';
 import { mkdir } from 'fs/promises';
+import { ProjectConfig } from '../cli.js';
 
-const emitLog = (message) => {
+const emitLog = (message: string): void => {
   console.log(`[Emit Logs]: ${message}`);
 };
 
-export async function createProject(projectName, options) {
+export async function createProject(projectName: string, options: ProjectConfig) {
   const spinner = ora('Creating project...').start();
-  
+  console.log(options);
+  console.log(projectName);
   try {
     const projectDir = join(options.projectPath, projectName);
     const config = {
