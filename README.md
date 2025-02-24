@@ -18,20 +18,21 @@ We got the motive to build this application because every time me and my team we
 
 ## 🚀 Features
 
-## 🎥 Demo
-
-### CLI Demo
-[![CLI Demo](https://img.youtube.com/vi/your_cli_demo_video_id/0.jpg)](your_cli_demo_video_link)
-
-### Web Tool Demo
-[![Web Tool Demo](https://img.youtube.com/vi/your_web_demo_video_id/0.jpg)](your_web_demo_video_link)
-
 - **Flexible Project Setup**: Choose from multiple frontend, backend, database, and authentication options.
 - **Automated Configuration**: Generates all necessary files, environment variables, and configurations.
 - **Git Integration**: Initializes a Git repository and sets up the remote origin.
 - **Pre-configured ORM & Database**: Automatically connects the chosen ORM with the selected database.
 - **Instant Deployment Readiness**: Sets up authentication, UI frameworks, and other dependencies for a fully functional project.
 - **Multiple Interfaces**: STACKD provides both a **CLI** and a **Graphical User Interface (GUI)** for easy project setup.
+
+## 🎥 Demo
+
+### CLI Demo
+https://github.com/user-attachments/assets/debe9515-a38f-4ba2-9126-b9b6f95e3a87
+
+### Web Tool Demo
+https://github.com/user-attachments/assets/465451f2-1e1a-48b6-a99e-253ef4f28e2d
+
 
 ## 🛠️ Tech Stack Options
 
