@@ -1,8 +1,8 @@
 {
-  "name": "@shivasankaran18/stackd",
-  "version": "9.0.0",
+  "name": "@shiva/stackd",
+  "version": "10.0.0",
   "bin": {
-    "stackd": "tsx ./stackd.ts",
+    "stackd": "stackd.ts",
     "pre-install": "npm install"
   },
   "type": "module",
@@ -22,7 +22,8 @@
     "inquirer": "^12.4.2",
     "ora": "^8.2.0",
     "path": "^0.12.7",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "create":"tsx ./stackd.ts init"
   },
   "devDependencies": {
     "@types/chalk": "^2.2.4",
