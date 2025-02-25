@@ -1,6 +1,6 @@
 {
-  "name": "@shiva/stackd",
-  "version": "10.0.0",
+  "name": "@shivasankaran18/stackd",
+  "version": "13.0.0",
   "bin": {
     "stackd": "stackd.ts",
     "pre-install": "npm install"

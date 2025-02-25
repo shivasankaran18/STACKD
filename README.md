@@ -14,7 +14,7 @@ STACKD (Abbreviation TBD) is an open-source scaffolding tool that simplifies the
 
 ## 💡 Motivation
 
-We got the motive to build this application because every time me and my team went for a hackathon, it used to take a lot of time to set up the project with basic things like frontend, UI setup, backend, ORM connection, authentication, and other configurations. People in the work environment also struggle with this, so we came up with this idea. STACKD allows programmers to jump directly into coding instead of spending time on tedious setup tasks.
+Every time my team and I participated in a hackathon, we found ourselves spending a significant amount of time setting up the project’s basic structure—configuring the frontend, backend, database, authentication, and other essential components. The same challenge extends to professionals in the industry, where initial setup can be tedious and time-consuming. To solve this, we created STACKD—a tool that eliminates repetitive setup tasks, allowing developers to focus on building their applications right away.
 
 ## 🚀 Features
 
@@ -99,6 +99,26 @@ To launch the web-based setup tool locally, use:
 
 ```sh
 npx @shivasankaran18/create-stackd setup
+```## 🛆 Installation
+
+### Prerequisites
+
+Make sure you have the following installed on your system:
+
+- Node.js
+- Git
+
+### Using `npm`
+
+```sh
+npm i @shivasankaran18/stackd
+npx stackd create
+```
+
+### Using `npx`
+
+```sh
+npx @shivasankaran18/stackd create
 ```
 
 ## ⚡ Usage
