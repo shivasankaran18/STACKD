@@ -74,32 +74,7 @@ https://github.com/user-attachments/assets/465451f2-1e1a-48b6-a99e-253ef4f28e2d
 - NextAuth
 - Passport
 
-## 📦 Installation
-
-### Prerequisites
-
-Make sure you have the following installed on your system:
-
-- Node.js
-- Git
-
-### CLI Tool
-
-To scaffold a new full-stack project, run:
-
-```sh
-npm create @shivasankaran18/stackd new proj-name
-```
-
-This will prompt you with setup questions and generate the project with the selected configurations.
-
-### Web Tool
-
-To launch the web-based setup tool locally, use:
-
-```sh
-npx @shivasankaran18/create-stackd setup
-```## 🛆 Installation
+### 🛆 Installation
 
 ### Prerequisites
 
