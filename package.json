@@ -1,8 +1,8 @@
 {
   "name": "@shivasankaran18/stackd",
-  "version": "6.0.0",
+  "version": "9.0.0",
   "bin": {
-    "stackd": "./stackd.ts",
+    "stackd": "tsx ./stackd.ts",
     "pre-install": "npm install"
   },
   "type": "module",
