@@ -55,9 +55,9 @@ export async function POST(req: NextRequest) {
             case 'react':
                 await createReactJS(config, projectDir,emitLog)
                 break
-            case 'nextjs':
-                await createNextJS(config, projectDir, emitLog);
-                break;
+            // case 'nextjs':
+            //     await createNextJS(config, projectDir, emitLog);
+            //     break;
             case 'django':
                 await installDjangoDependencies(projectDir);
                 break;
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
                 await createAngularTS(config, projectDir)
                 break
             default:
-                throw new Error(`Unsupported frontend: ${config.frontend}`)
+                throw new Error(`Unsupported frontend`)
         }
 
         switch(config.backend) {
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
             //     await createNextJS(config, projectDir, emitLog);
             //     break;
             default:
-                throw new Error(`Unsupported backend: ${config.backend}`)
+                throw new Error(`Unsupported backend`)
         }
 
         switch(config.auth) {
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
                     await setupPassport(config, projectDir,emitLog);
                 break
             default:
-                throw new Error(`Unsupported auth: ${config.authentication}`) 
+                throw new Error(`Unsupported auth`) 
         }
         switch(config.orm) {
             case 'drizzle':
@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
                 await setupMongoose(config, projectDir,emitLog);
                 break
             default:
-                throw new Error(`Unsupported orm: ${config.orm}`)
+                throw new Error(`Unsupported orm`)
         }
         const gitignore = `
 # Dependencies

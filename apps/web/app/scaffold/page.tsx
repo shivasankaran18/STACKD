@@ -49,7 +49,7 @@ const Navbar = () => (
       </div>
       
       <a 
-        href="https://github.com/ShyamSunder06/STACKD" 
+        href="https://github.com/shivasankaran18/STACKD" 
         target="_blank" 
         rel="noopener noreferrer"
         className="absolute right-8 text-muted-foreground hover:text-foreground"

@@ -15,6 +15,7 @@ export interface ProjectConfig {
   orm: string;
   auth: string;
   dbUrl: string;
+  ui: string;
 }
 
 interface Answers {
@@ -27,7 +28,8 @@ interface Answers {
   orm: string;
   auth: string;
   dbUrl: string;
-  projectName:string;
+  projectName: string;
+  ui: string;
 }
 
 const showBanner = () => {
@@ -67,7 +69,9 @@ const CHOICES = {
   MONGOOSE: 'Mongoose',
   JWT: 'JWT',
   NEXTAUTH: 'NextAuth',
-  PASSPORT: 'Passport'
+  PASSPORT: 'Passport',
+  TAILWIND: 'Tailwind CSS',
+  SHADCN: 'shadcn/ui + Tailwind'
 };
 
 program
@@ -124,6 +128,27 @@ program
       }
     ]);
 
+    // Add UI framework selection after frontend
+    let uiChoice = { ui: CHOICES.NONE };
+    if (frontendChoice.frontend !== chalk.green(CHOICES.DJANGO_TEMPLATES) && 
+        frontendChoice.frontend !== CHOICES.SKIP) {
+      uiChoice = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'ui',
+          message: chalk.magenta.bold('🎨 Choose a UI framework:'),
+          choices: (answers) => {
+            const isReact = frontendChoice.frontend.includes('React');
+            return [
+              chalk.blue(CHOICES.TAILWIND),
+              ...(isReact ? [chalk.cyan(CHOICES.SHADCN)] : []),
+              CHOICES.NONE
+            ];
+          },
+          default: CHOICES.NONE,
+        }
+      ]);
+    }
 
     const backendChoice = await inquirer.prompt([
       {
@@ -210,6 +235,7 @@ program
     const answers = {
       ...projectSettings,
       ...frontendChoice,
+      ...uiChoice,
       ...backendChoice,
       ...databaseChoice,
       ...ormChoice,

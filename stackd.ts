@@ -7,19 +7,17 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 
-// Handle path resolution for both ESM and CommonJS
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Get the package root directory
+
 const getPackageRoot = () => {
-  // Navigate up from current file until we find package.json
   let currentDir = __dirname;
   while (!fs.existsSync(join(currentDir, 'package.json'))) {
     const parentDir = dirname(currentDir);
     if (parentDir === currentDir) {
-      // We've reached the filesystem root without finding package.json
-      return process.cwd(); // Fallback to current working directory
+      
+      return process.cwd();
     }
     currentDir = parentDir;
   }
@@ -52,21 +50,16 @@ const executeCommand = (command: string, cwd: string) => {
 };
 
 const getAppPath = (appName: string) => {
-  // First try the local development structure
   const devPath = join(packageRoot, 'apps', appName);
-  
-  // Check if directory exists in development structure
   if (fs.existsSync(devPath)) {
     return devPath;
   }
   
-  // If not found, try the node_modules structure for published packages
-  const publishedPath = join(packageRoot, 'node_modules', '@stackd', appName);
+  const publishedPath = join(packageRoot, 'node_modules', '@shivasankaran','stackd','apps', appName);
   if (fs.existsSync(publishedPath)) {
     return publishedPath;
   }
   
-  // Fallback to direct path
   return join(packageRoot, appName);
 };
 
@@ -90,22 +83,19 @@ const initializeProject = async () => {
     if (answer.interface === 'cli') {
       console.log(chalk.blue('\n📦 Starting CLI interface...\n'));
       
-      // Get CLI app path
       const cliAppPath = getAppPath('cli');
       const cliScriptPath = join(cliAppPath, 'src', 'cli.ts');
-      
-      // Check if the script exists
+      console.log(cliScriptPath);
       if (!fs.existsSync(cliScriptPath)) {
         console.log(chalk.yellow(`\nCLI script not found at ${cliScriptPath}. Trying alternative paths...\n`));
         
-        // Try to find the CLI script in node_modules
         const command = 'npx tsx @stackd/cli/src/cli.ts run';
         executeCommand(command, process.cwd());
       } else {
+        console.log("hello");
         executeCommand(`npx tsx ${cliScriptPath} run`, process.cwd());
       }
     } else {
-      // Get Web app path
       const webAppPath = getAppPath('web');
       
       console.log(chalk.green(`\n🌐 Setting up Web Interface at ${webAppPath}...\n`));

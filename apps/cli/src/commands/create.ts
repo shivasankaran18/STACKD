@@ -16,6 +16,8 @@ import chalk from 'chalk';
 import ora from 'ora';
 import { mkdir } from 'fs/promises';
 import { ProjectConfig } from '../cli.js';
+import { setupShadcn } from '../scripts/ui/shadcn.js';
+import { setupTailwindCSS } from '../scripts/ui/tailwindcss.js';
 
 const emitLog = (message: string): void => {
   console.log(`[Emit Logs]: ${message}`);
@@ -62,6 +64,24 @@ export async function createProject(projectName: string, options: ProjectConfig)
       default:
         emitLog('Unknown frontend choice');
         break;
+    }
+
+    // UI Framework setup
+    if (options.ui !== 'None' && options.frontend !== 'Django Templates' && options.frontend !== 'Skip') {
+      spinner.text = 'Setting up UI framework...';
+      switch(options.ui) {
+        case 'Tailwind CSS':
+          await setupTailwindCSS(config, projectDir, emitLog);
+          break;
+        case 'shadcn/ui + Tailwind':
+          await setupTailwindCSS(config, projectDir, emitLog);
+          // @ts-ignore
+          await setupShadcn(config, projectDir, emitLog);
+          break;
+        default:
+          emitLog('Unknown UI framework choice');
+          break;
+      }
     }
 
     // Backend setup
@@ -140,6 +160,16 @@ export async function createProject(projectName: string, options: ProjectConfig)
         console.log(chalk.cyan('  python manage.py runserver'));
       } else {
         console.log(chalk.cyan('  npm run dev'));
+      }
+    }
+
+    // Add UI-specific instructions
+    if (options.ui !== 'None') {
+      console.log(chalk.yellow('\nUI Framework Setup:'));
+      if (options.ui === 'Tailwind CSS') {
+        console.log(chalk.cyan('  Tailwind CSS is ready to use'));
+      } else if (options.ui === 'shadcn/ui + Tailwind') {
+        console.log(chalk.cyan('  Run `npx shadcn-ui@latest init` to complete shadcn/ui setup'));
       }
     }
 

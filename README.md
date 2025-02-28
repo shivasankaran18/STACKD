@@ -87,13 +87,13 @@ Make sure you have the following installed on your system:
 
 ```sh
 npm i @shivasankaran18/stackd
-npx stackd create
+npx stackd init
 ```
 
 ### Using `npx`
 
 ```sh
-npx @shivasankaran18/stackd create
+npx @shivasankaran18/stackd init
 ```
 
 ## ⚡ Usage
