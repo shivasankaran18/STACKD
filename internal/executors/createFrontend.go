@@ -10,11 +10,11 @@ import (
 func CreateFrontend(dir string, frontend prompt.FrontEndResponse) {
 
 	switch frontend {
-	case "React+JS":
+	case prompt.ReactJS:
 		CreateReactJS(dir)
-	case "React+TS":
+	case prompt.ReactTS:
 		CreateReactTS(dir)
-	case "None":
+	case prompt.Frontend_None:
 		return
 	default:
 		return
@@ -22,6 +22,13 @@ func CreateFrontend(dir string, frontend prompt.FrontEndResponse) {
 }
 
 func CreateReactJS(dir string) {
+	var path string= dir+"/frontend"
+	error:=os.MkdirAll(path, os.ModePerm)
+	if error != nil {
+		fmt.Println("Error creating frontend directory:", error)
+		os.Exit(1)
+		return
+	}
 	command :=exec.Command("npm","create","vite@latest",dir+"/frontend","--","--template","react")
 
 	err := command.Run()

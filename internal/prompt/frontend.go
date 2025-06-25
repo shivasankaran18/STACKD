@@ -11,7 +11,7 @@ type FrontEndResponse string
 const (
 	ReactJS FrontEndResponse = "React+JS"
 	ReactTS FrontEndResponse = "React+TS"
-	None   FrontEndResponse = "None"
+	Frontend_None   FrontEndResponse = "None"
 )
 
 
@@ -37,7 +37,7 @@ func AskFrontend() FrontEndResponse {
 			res = ReactTS
 			break
 		default:
-			res= "None"
+			res= Frontend_None
 	
 	}
 

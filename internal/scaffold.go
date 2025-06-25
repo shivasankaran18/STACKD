@@ -7,11 +7,17 @@ import (
 
 func Scaffold(){
 	dir:=prompt.AskDirectory()
-	executors.CreateDirectories(dir)
-	
 	frontend := prompt.AskFrontend()
-	
+	ui:=prompt.AskUI()
+	backend:=prompt.AskBackend()
+
+
+
+
+	executors.CreateDirectories(dir)
 	executors.CreateFrontend(dir, frontend)
+	executors.CreateUI(dir, ui,frontend)
+	executors.CreateBackend(dir, backend)
 
 
 
