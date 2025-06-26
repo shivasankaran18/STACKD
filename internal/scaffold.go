@@ -10,6 +10,8 @@ func Scaffold(){
 	frontend := prompt.AskFrontend()
 	ui:=prompt.AskUI()
 	backend:=prompt.AskBackend()
+	orm:=prompt.AskORM()
+	dbURL:=prompt.AskDatabaseURL()
 
 
 
@@ -18,6 +20,7 @@ func Scaffold(){
 	executors.CreateFrontend(dir, frontend)
 	executors.CreateUI(dir, ui,frontend)
 	executors.CreateBackend(dir, backend)
+	executors.CreateORM(dir, orm, dbURL)
 
 
 
