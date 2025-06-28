@@ -4,55 +4,62 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
-type FrontEndResponse string
+type DbTypeResponse string
 
 const (
-	ReactJS       FrontEndResponse = "React (JavaScript)"
-	ReactTS       FrontEndResponse = "React (TypeScript)"
-	Frontend_None FrontEndResponse = "None"
+	Postgres DbTypeResponse = "postgresql"
+	MySQL    DbTypeResponse = "mysql"
+	MongoDB  DbTypeResponse = "mongodb"
+	DB_None  DbTypeResponse = "NoDB"
 )
-
-type frontendModel struct {
-	cursor   int
-	choices  []string
+type dbTypeModel struct {
+	input textinput.Model
+	cancel bool
+	cursor int
+	choices []string
 	selected bool
-	result   string
-	cancel   bool
+	result string
 }
 
-func (m frontendModel) Init() tea.Cmd {
+
+
+func (m dbTypeModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m frontendModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m dbTypeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q":
+		case "ctrl+c", "q", "esc":
 			m.cancel = true
 			return m, tea.Quit
-		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
-			}
-		case "down", "j":
-			if m.cursor < len(m.choices)-1 {
-				m.cursor++
-			}
 		case "enter":
 			m.selected = true
 			m.result = m.choices[m.cursor]
 			return m, tea.Quit
+		
+		case "up", "k":
+			if m.cursor > 0 {
+				m.cursor--
+			}
+		case "down", 	"j":
+			if m.cursor < len(m.choices)-1 {
+				m.cursor++
+			}
 		}
+
 	}
+
 	return m, nil
 }
 
-func (m frontendModel) View() string {
+func (m dbTypeModel) View() string {
 	labelStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("14")).Bold(true).Background(lipgloss.Color("0")).Padding(0, 1)
 	optionStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("7")).Padding(0, 2)
 	selectedStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("15")).Background(lipgloss.Color("12")).Bold(true).Padding(0, 2).Border(lipgloss.RoundedBorder(), true).BorderForeground(lipgloss.Color("12"))
@@ -60,9 +67,10 @@ func (m frontendModel) View() string {
 	bgStyle := lipgloss.NewStyle().Background(lipgloss.Color("0"))
 
 	if m.selected {
-		return labelStyle.MarginTop(0).Render("You chose:") + "\n" + selectedStyle.Render(m.result) + "\n" + lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Render("Press q to quit.")
+		return labelStyle.Render("You chose:") + "\n" + selectedStyle.Render(m.result) + "\n"
 	}
-	out := labelStyle.Render("🎨 Choose a Frontend Framework") + "\n\n"
+	out := labelStyle.Render("💾 Choose a Database Type") + "\n\n"
+
 	var options string
 	for i, choice := range m.choices {
 		cursor := "  "
@@ -71,7 +79,7 @@ func (m frontendModel) View() string {
 			cursor = "> "
 			style = selectedStyle
 		}
-		options += style.Render(cursor+choice) + "\n"
+		options += style.Render(cursor + choice) + "\n"
 	}
 	list := borderStyle.Render(options)
 	out += bgStyle.Render(list)
@@ -79,13 +87,14 @@ func (m frontendModel) View() string {
 	return out
 }
 
-func AskFrontend() FrontEndResponse {
-	frontendOptions := []string{
-		string(ReactJS),
-		string(ReactTS),
-		string(Frontend_None),
+func AskDatabaseType() DbTypeResponse {
+	dbTypeOptions := []string{
+		string(Postgres),
+		string(MySQL),
+		string(MongoDB),
+		string(DB_None),
 	}
-	m := frontendModel{choices: frontendOptions}
+	m := dbTypeModel{choices: dbTypeOptions}
 	p := tea.NewProgram(m)
 	finalModel, err := p.Run()
 	if err != nil {
@@ -93,13 +102,9 @@ func AskFrontend() FrontEndResponse {
 		os.Exit(1)
 		return ""
 	}
-	if m.cancel {
-		os.Exit(1)
-		return Frontend_None
-	}
-	mod := finalModel.(frontendModel)
+	mod := finalModel.(dbTypeModel)
 	if mod.selected {
-		return FrontEndResponse(mod.result)
+		return DbTypeResponse(mod.result)
 	}
-	return Frontend_None
+	return DB_None
 }

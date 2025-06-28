@@ -1,5 +1,3 @@
-
-
 package prompt
 
 import (
@@ -48,7 +46,7 @@ func (m dirModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m dirModel) View() string {
 	title := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFD700")).Bold(true).Render("📁 Enter project directory")
-	inputBox := lipgloss.NewStyle().Foreground(lipgloss.Color("#00FA9A")).Border(lipgloss.RoundedBorder()).Padding(0, 1).Render(m.input.View())
+	inputBox := lipgloss.NewStyle().Foreground(lipgloss.Color("#00FA9A")).Border(lipgloss.RoundedBorder()).Padding(0, 1).MarginBottom(1).Render(m.input.View())
 	return fmt.Sprintf("%s\n\n%s", title, inputBox)
 }
 
@@ -63,5 +61,7 @@ func AskDirectory() string {
 		os.Exit(1)
 		return ""
 	}
+	resultBox := lipgloss.NewStyle().MarginBottom(2).Render(m.(dirModel).input.Value())
+	fmt.Print(resultBox)
 	return m.(dirModel).input.Value()
 }

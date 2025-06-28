@@ -12,16 +12,28 @@ func Scaffold() {
 
 	if projType == prompt.ProjectTypeFB {
 		frontend := prompt.AskFrontend()
-		ui := prompt.AskUI()
+		if(frontend!=prompt.Frontend_None){
+			ui := prompt.AskUI()
+		}
+		
 		backend := prompt.AskBackend()
-		orm := prompt.AskORM()
-		dbURL := prompt.AskDatabaseURL()
+		if(backend!=prompt.Backend_None){
+			orm := prompt.AskORM()
+			if(orm!=prompt.ORM_None){
+				dbType := prompt.AskDatabaseType()
+				dbURL := prompt.AskDatabaseURL()
+			}
+
 
 		executors.CreateDirectories(dir)
 		executors.CreateFrontend(dir, frontend)
-		executors.CreateUI(dir, ui, frontend)
+		if(frontend!=prompt.Frontend_None){
+			executors.CreateUI(dir, ui, frontend)
+		}
 		executors.CreateBackend(dir, backend)
-		executors.CreateORM(dir, orm, dbURL)
+		if(backend!=prompt.Backend_None && orm!=prompt.ORM_None){
+			executors.CreateORM(dir, orm, dbURL, dbType)
+		}
 
 	}else if projType == prompt.ProjectTypeFullStack {
 		fullStack := prompt.AskFullStack()

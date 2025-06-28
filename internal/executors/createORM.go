@@ -9,10 +9,10 @@ import (
 )
 
 
-func CreateORM(dir string, orm prompt.ORMResponse,  dbURL string) {
+func CreateORM(dir string, orm prompt.ORMResponse,  dbURL string, dbType prompt.DbTypeResponse) {
 	switch orm {
 	case prompt.Prisma:
-		CreatePrisma(dir ,dbURL)
+		CreatePrisma(dir ,dbURL, dbType)
 	case prompt.Drizzle:
 	//	CreateDrizzle(dir, backend, dbURL)
 	case prompt.Orms_None:
@@ -22,7 +22,7 @@ return
 	}
 }
 
-func CreatePrisma(dir string,dbURL string){
+func CreatePrisma(dir string,dbURL string, dbType prompt.DbTypeResponse){
 	path := dir + "/backend";
 	error := os.MkdirAll(path, os.ModePerm)
 	if error != nil {
@@ -39,15 +39,36 @@ func CreatePrisma(dir string,dbURL string){
 		return
 	}
 	fmt.Println("Prisma installed successfully")
-	command = exec.Command("npx", "prisma", "init")
-	command.Dir = path
-	err = command.Run()
+	prismaTemplPath := filepath.Join("internal/templates/prisma", "prisma.tmpl")
+	prismaTmpl, err := template.ParseFiles(prismaTemplPath)
 	if err != nil {
-		fmt.Println("Error initializing Prisma:", err)
+		fmt.Println("Error parsing Prisma template:", err)
 		os.Exit(1)
 		return
 	}
-	fmt.Println("Prisma initialized successfully")
+	err = os.MkdirAll(filepath.Join(path, "prisma"), os.ModePerm)
+	if err != nil {
+		fmt.Println("Error creating prisma directory:", err)
+		os.Exit(1)
+		return
+	}
+	prismaPath := filepath.Join(path, "prisma", "schema.prisma")
+	prismaFile, err := os.Create(prismaPath)
+	if err != nil {
+		fmt.Println("Error creating Prisma schema file:", err)
+		os.Exit(1)
+		return
+	}
+	defer prismaFile.Close()
+
+	err = prismaTmpl.Execute(prismaFile, map[string]string{
+		"dbType": string(dbType),
+	})
+	if err != nil {
+		fmt.Println("Error executing Prisma template:", err)
+		os.Exit(1)
+		return
+	}
 	file:=filepath.Join(path,".env")
 
 	
