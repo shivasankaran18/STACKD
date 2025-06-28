@@ -1,22 +1,21 @@
 package prompt
 
-
-import(
+import (
 	"fmt"
-	"github.com/manifoldco/promptui"
 	"os"
-)
 
+	"github.com/manifoldco/promptui"
+)
 
 type MonoRepoResponse string
 
-const(
-	Turborepo MonoRepoResponse = "Turborepo"
+const (
+	Turborepo     MonoRepoResponse = "Turborepo"
 	MonoRepo_None MonoRepoResponse = "None"
 )
 
 func AskMonoRepo() MonoRepoResponse {
-	monoRepoOption:=[]string{
+	monoRepoOption := []string{
 		string(Turborepo),
 		string(MonoRepo_None),
 	}
@@ -32,7 +31,7 @@ func AskMonoRepo() MonoRepoResponse {
 		return ""
 	}
 
-	var res MonoRepoResponse="";
+	var res MonoRepoResponse = ""
 
 	switch result {
 	case string(Turborepo):
@@ -45,6 +44,5 @@ func AskMonoRepo() MonoRepoResponse {
 		res = MonoRepo_None
 	}
 	return res
-	
 
 }

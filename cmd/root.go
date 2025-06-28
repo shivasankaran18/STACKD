@@ -44,6 +44,33 @@ func init() {
 func printBanner() {
 	fig := figure.NewFigure("STACKD", "", true)
 	banner := fig.String()
-	styled := lipgloss.NewStyle().Foreground(lipgloss.Color("#00FA9A")).Bold(true).Align(lipgloss.Center).Padding(1, 2).Render(banner)
-	fmt.Println(styled)
+
+	// Banner style
+	bannerStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#00FA9A")).Bold(true).Align(lipgloss.Center).Padding(1, 2)
+	styledBanner := bannerStyle.Render(banner)
+
+	// Project description style
+	descStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFD700")).Bold(true)
+	desc := descStyle.Render("🚀 Full Stack Project Generator")
+
+	// Divider style
+	dividerStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#00CED1")).Bold(true)
+	divider := dividerStyle.Render("\n" + "="+string(make([]rune, 50))+"=" + "\n")
+	// We'll use a fixed divider for now
+	divider = dividerStyle.Render("\n==================================================\n")
+
+	// Interface selection prompt
+	promptStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#A9A9F5")).Bold(true)
+	prompt := promptStyle.Render("\u2714\ufe0f Choose your preferred interface: ") + lipgloss.NewStyle().Foreground(lipgloss.Color("#4682B4")).Bold(true).Render("CLI Interface")
+
+	// Starting message
+//	startStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFA500")).Bold(true)
+//	startMsg := startStyle.Render("\n\ud83d\udce6 Starting CLI interface...\n")
+
+	// Print all together, centered
+	fmt.Println(styledBanner)
+	fmt.Println(desc)
+	fmt.Println(divider)
+	fmt.Println(prompt)
+	//fmt.Println(startMsg)
 }
