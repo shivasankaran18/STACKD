@@ -11,16 +11,17 @@ type UIResponse string
 
 const (
 	TailwindCSS UIResponse = "TailwindCSS"
-	ShadCN UIResponse = "ShadCN"
+	ShadCN UIResponse = "TailwindCSS + ShadCN"
 	UI_None UIResponse = "None"
 )
 
 
 func AskUI() UIResponse {
 	uiOptions := []string{
-		"Tailwind CSS",
-		"TailwindCSS + ShadCN",
-		"None",
+		string(TailwindCSS),
+		string(ShadCN),
+		string(UI_None),
+		
 	}
 
 	prompt := promptui.Select{
@@ -28,21 +29,22 @@ func AskUI() UIResponse {
 		Items: uiOptions,
 	}
 	_, result, err := prompt.Run()
-
-	var res UIResponse = ""
-	switch result {
-	case "Tailwind CSS":
-		res = TailwindCSS
-	case "TailwindCSS + ShadCN":
-		res = ShadCN
-	default:
-		res = UI_None
-	}
-
+	
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
 		os.Exit(1)
 		return ""
 	}
+
+	var res UIResponse = ""
+	switch result {
+	case string(TailwindCSS):
+		res = TailwindCSS
+	case string(ShadCN):
+		res = ShadCN
+	default:
+		res = UI_None
+	}
+
 	return res
 }

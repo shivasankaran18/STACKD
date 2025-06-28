@@ -15,31 +15,32 @@ const (
 
 func AskORM() ORMResponse {
 	ormOptions := []string{
-		"Prisma",
-		"Drizzle ORM",
-		"None",
+		string(Prisma),
+		string(Drizzle),
+		string(Orms_None),
 	}
 	prompt := promptui.Select{
 		Label: "📦 Choose an ORM",
 		Items: ormOptions,
 	}
 	_, result, err := prompt.Run()
-
-	var res ORMResponse=""
-	switch result {
-	case "Prisma":
-		res = Prisma
-	case "Drizzle ORM":
-		res = Drizzle
-	default:
-		res= Orms_None
-	}
-
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
 		os.Exit(1)
 		return ""
 	}
+
+	var res ORMResponse=""
+	switch result {
+	case string(Prisma):
+		res = Prisma
+	case string(Drizzle):
+		res = Drizzle
+	default:
+		res= Orms_None
+	}
+
+	
 	return res
 
 }	

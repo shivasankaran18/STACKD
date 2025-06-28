@@ -1,25 +1,25 @@
 package prompt
 
-import(
+import (
 	"fmt"
-	"github.com/manifoldco/promptui"
 	"os"
-)
 
+	"github.com/manifoldco/promptui"
+)
 
 type BackendResponse string
 
 const (
-	ExpressJS BackendResponse = "ExpressJS"
-	ExpressTS BackendResponse = "ExpressTS"
+	ExpressJS    BackendResponse = "ExpressJS"
+	ExpressTS    BackendResponse = "ExpressTS"
 	Backend_None BackendResponse = "None"
 )
 
-func AskBackend() BackendResponse{
+func AskBackend() BackendResponse {
 	backendOptions := []string{
-		"Express (JavaScript)",
-		"Express (TypeScript)",
-		"None",
+		string(ExpressJS),
+		string(ExpressTS),
+		string(Backend_None),
 	}
 
 	prompt := promptui.Select{
@@ -27,25 +27,24 @@ func AskBackend() BackendResponse{
 		Items: backendOptions,
 	}
 	_, result, err := prompt.Run()
-	var res BackendResponse = ""
-	switch result {
-	case "Express (JavaScript)":
-		res = ExpressJS
-		break
-	case "Express (TypeScript)":
-		res = ExpressTS
-		break
-	default:
-		res = Backend_None
-
-	
-	}
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
 		os.Exit(1)
 		return ""
 	}
-	return res
+	var res BackendResponse = ""
+	switch result {
+	case string(ExpressJS):
+		res = ExpressJS
+		break
+	case string(ExpressTS):
+		res = ExpressTS
+		break
+	default:
+		res = Backend_None
 
+	}
+
+	return res
 
 }

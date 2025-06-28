@@ -2,50 +2,47 @@ package prompt
 
 import (
 	"fmt"
-	"github.com/manifoldco/promptui"
 	"os"
+
+	"github.com/manifoldco/promptui"
 )
 
 type FrontEndResponse string
 
 const (
-	ReactJS FrontEndResponse = "React+JS"
-	ReactTS FrontEndResponse = "React+TS"
-	Frontend_None   FrontEndResponse = "None"
+	ReactJS       FrontEndResponse = "React (JavaScript)"
+	ReactTS       FrontEndResponse = "React (TypeScript)"
+	Frontend_None FrontEndResponse = "None"
 )
-
-
 
 func AskFrontend() FrontEndResponse {
 	frontendOptions := []string{
-		"React (JavaScript)",
-		"React (TypeScript)",
-		"None",
+		string(ReactJS),
+		string(ReactTS),
+		string(Frontend_None),
 	}
 	prompt := promptui.Select{
 		Label: "🎨 Choose a Frontend Framework",
 		Items: frontendOptions,
 	}
 	_, result, err := prompt.Run()
-	
-	var res FrontEndResponse=""
-	switch result {
-		case "React (JavaScript)":
-			res = ReactJS
-			break
-		case "React (TypeScript)":
-			res = ReactTS
-			break
-		default:
-			res= Frontend_None
-	
-	}
-
-
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
 		os.Exit(1)
 		return ""
 	}
+	var res FrontEndResponse = ""
+	switch result {
+	case string(ReactJS):
+		res = ReactJS
+		break
+	case string(ReactTS):
+		res = ReactTS
+		break
+	default:
+		res = Frontend_None
+
+	}
+
 	return res
 }
