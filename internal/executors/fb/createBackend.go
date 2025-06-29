@@ -1,4 +1,4 @@
-package executors
+package executors_fb
 
 import (
 	"fmt"
@@ -8,16 +8,16 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/shivasankaran18/STACKD/internal/prompt"
+	prompt_fb "github.com/shivasankaran18/STACKD/internal/prompt/fb"
 )
 
-func CreateBackend(dir string, backend prompt.BackendResponse) {
+func CreateBackend(dir string, backend prompt_fb.BackendResponse) {
 	switch backend {
-	case prompt.ExpressJS:
+	case prompt_fb.ExpressJS:
 		CreateExpressJS(dir)
-	case prompt.ExpressTS:
+	case prompt_fb.ExpressTS:
 		CreateExpressTS(dir)
-	case prompt.Backend_None:
+	case prompt_fb.Backend_None:
 		return
 	default:
 		return
@@ -127,7 +127,7 @@ func CreateExpressTS(dir string) {
 		return
 	}
 
-	command=exec.Command("tsc", "--init")
+	command=exec.Command("npx", "tsc", "--init")
 	command.Dir = path
 	err = command.Run()
 	if err != nil {

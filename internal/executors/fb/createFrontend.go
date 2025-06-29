@@ -1,20 +1,21 @@
-package executors
+package executors_fb
 
 import (
-	"os/exec"
 	"fmt"
 	"os"
-	"github.com/shivasankaran18/STACKD/internal/prompt"
+	"os/exec"
+
+	prompt_fb "github.com/shivasankaran18/STACKD/internal/prompt/fb"
 )
 
-func CreateFrontend(dir string, frontend prompt.FrontEndResponse) {
+func CreateFrontend(dir string, frontend prompt_fb.FrontEndResponse) {
 
 	switch frontend {
-	case prompt.ReactJS:
+	case prompt_fb.ReactJS:
 		CreateReactJS(dir)
-	case prompt.ReactTS:
+	case prompt_fb.ReactTS:
 		CreateReactTS(dir)
-	case prompt.Frontend_None:
+	case prompt_fb.Frontend_None:
 		return
 	default:
 		return

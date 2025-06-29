@@ -2,53 +2,81 @@ package internal
 
 import (
 	"github.com/shivasankaran18/STACKD/internal/executors"
+	executors_fb "github.com/shivasankaran18/STACKD/internal/executors/fb"
+	executors_fullstack "github.com/shivasankaran18/STACKD/internal/executors/fullstack"
+	executors_monorepo "github.com/shivasankaran18/STACKD/internal/executors/monorepo"
 	"github.com/shivasankaran18/STACKD/internal/prompt"
+	prompt_fb "github.com/shivasankaran18/STACKD/internal/prompt/fb"
+	prompt_fullstack "github.com/shivasankaran18/STACKD/internal/prompt/fullstack"
+	prompt_monorepo "github.com/shivasankaran18/STACKD/internal/prompt/monorepo"
 )
 
 func Scaffold() {
 	dir := prompt.AskDirectory()
 	projType := prompt.AskProjType()
 
-
 	if projType == prompt.ProjectTypeFB {
-		frontend := prompt.AskFrontend()
-		if(frontend!=prompt.Frontend_None){
-			ui := prompt.AskUI()
+		frontend := prompt_fb.AskFrontend()
+		var ui prompt_fb.UIResponse
+		var orm prompt.ORMResponse
+		var dbType prompt.DbTypeResponse
+		var dbURL string
+		var backend prompt_fb.BackendResponse
+		var auth prompt_fb.AuthResponse
+		if frontend != prompt_fb.Frontend_None {
+			ui = prompt_fb.AskUI()
 		}
-		
-		backend := prompt.AskBackend()
-		if(backend!=prompt.Backend_None){
+
+		backend = prompt_fb.AskBackend()
+		if backend != prompt_fb.Backend_None {
 			orm := prompt.AskORM()
-			if(orm!=prompt.ORM_None){
-				dbType := prompt.AskDatabaseType()
-				dbURL := prompt.AskDatabaseURL()
+			if orm != prompt.Orms_None {
+				dbType = prompt.AskDatabaseType()
+				dbURL = prompt.AskDatabaseURL()
 			}
-
-
-		executors.CreateDirectories(dir)
-		executors.CreateFrontend(dir, frontend)
-		if(frontend!=prompt.Frontend_None){
-			executors.CreateUI(dir, ui, frontend)
-		}
-		executors.CreateBackend(dir, backend)
-		if(backend!=prompt.Backend_None && orm!=prompt.ORM_None){
-			executors.CreateORM(dir, orm, dbURL, dbType)
+			auth = prompt_fb.AskAuth()
 		}
 
-	}else if projType == prompt.ProjectTypeFullStack {
-		fullStack := prompt.AskFullStack()
+		executors.CreateDirectories(dir)
+		executors_fb.CreateFrontend(dir, frontend)
+		if frontend != prompt_fb.Frontend_None {
+			executors_fb.CreateUI(dir, ui, frontend)
+		}
+		executors_fb.CreateBackend(dir, backend)
+		if backend != prompt_fb.Backend_None && orm != prompt.Orms_None {
+			executors_fb.CreateORM(dir, orm, dbURL, dbType)
+		}
+		if backend != prompt_fb.Backend_None {
+			executors_fb.CreateAuth(dir, auth, backend)
+		}
+
+	} else if projType == prompt.ProjectTypeFullStack {
+		fullStack := prompt_fullstack.AskFullStack()
+		auth := prompt_fullstack.AskAuth()
+		orm := prompt.AskORM()
+		dbType := prompt.AskDatabaseType()
+		dbURL := prompt.AskDatabaseURL()
 
 		executors.CreateDirectories(dir)
-		executors.CreateFullStack(dir,fullStack)
-	}else if projType == prompt.ProjectTypeMonoRepos {
-		monorepo:=prompt.AskMonoRepo()
+		executors_fullstack.CreateFullStack(dir, fullStack)
 
+
+		if auth != prompt_fullstack.Auth_None {
+			executors_fullstack.CreateAuth(dir, auth)
+		}
+
+
+		if orm != prompt.Orms_None {
+			executors_fullstack.CreateORM(dir, orm, dbURL, dbType)
+		}
+
+	} else if projType == prompt.ProjectTypeMonoRepos {
+		monorepo := prompt_monorepo.AskMonoRepo()
 
 		executors.CreateDirectories(dir)
-		executors.CreateMonoRepo(dir, monorepo)
+		executors_monorepo.CreateMonoRepo(dir, monorepo)
 	} else {
 		return
 	}
-
 
 }

@@ -1,16 +1,17 @@
-package executors
+package executors_fullstack
 
-import(
+import (
 	"log"
 	"os/exec"
-	"github.com/shivasankaran18/STACKD/internal/prompt"
+
+	prompt_fullstack "github.com/shivasankaran18/STACKD/internal/prompt/fullstack"
 )
 
-func CreateFullStack(dir string, fullstack prompt.FullStackResponse) {
+func CreateFullStack(dir string, fullstack prompt_fullstack.FullStackResponse) {
 	switch fullstack {
-	case prompt.NextJs:
+	case prompt_fullstack.NextJs:
 		CreateNext(dir)
-	case prompt.Django:
+	case prompt_fullstack.Django:
 		//CreateDjango(dir)
 	default:
 		log.Println("No full stack framework selected")

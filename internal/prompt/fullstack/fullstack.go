@@ -1,4 +1,4 @@
-package prompt
+package prompt_fullstack
 
 import (
 	"fmt"

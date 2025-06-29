@@ -1,17 +1,17 @@
-package executors
+package executors_monorepo
 
 import (
 	"log"
 	"os/exec"
-	"github.com/shivasankaran18/STACKD/internal/prompt"
 
+	prompt_monorepo "github.com/shivasankaran18/STACKD/internal/prompt/monorepo"
 )
 
-func CreateMonoRepo(dir string, monoRepo prompt.MonoRepoResponse) {
+func CreateMonoRepo(dir string, monoRepo prompt_monorepo.MonoRepoResponse) {
 	switch monoRepo {
-	case prompt.Turborepo:
+	case prompt_monorepo.Turborepo:
 		CreateTurbo(dir)
-	case prompt.MonoRepo_None:
+	case prompt_monorepo.MonoRepo_None:
 		return
 	default:
 		return

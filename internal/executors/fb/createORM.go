@@ -1,4 +1,5 @@
-package executors
+package executors_fb
+
 import (
 	"fmt"
 	"os"
@@ -90,6 +91,14 @@ func CreatePrisma(dir string,dbURL string, dbType prompt.DbTypeResponse){
 	})
 	if err != nil {
 		fmt.Println("Error creating .env file:", err)
+		os.Exit(1)
+		return
+	}
+	command = exec.Command("npx", "prisma", "generate")
+	command.Dir = path
+	err = command.Run()
+	if err != nil {
+		fmt.Println("Error generating Prisma:", err)
 		os.Exit(1)
 		return
 	}

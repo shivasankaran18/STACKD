@@ -1,4 +1,4 @@
-package executors
+package executors_fb
 
 import (
 	"fmt"
@@ -6,26 +6,26 @@ import (
 	"os/exec"
 	"text/template"
 
-	"github.com/shivasankaran18/STACKD/internal/prompt"
+	prompt_fb "github.com/shivasankaran18/STACKD/internal/prompt/fb"
 )
 
 
-func CreateUI(dir string, ui prompt.UIResponse,frontend prompt.FrontEndResponse) {
+func CreateUI(dir string, ui prompt_fb.UIResponse,frontend prompt_fb.FrontEndResponse) {
 	switch ui {
-	case prompt.TailwindCSS:
+	case prompt_fb.TailwindCSS:
 		CreateTailwindCSS(dir,frontend)
 		break
-	case prompt.ShadCN:
+	case prompt_fb.ShadCN:
 		//CreateShadCN(dir)
 		break
-	case prompt.UI_None:
+	case prompt_fb.UI_None:
 		return
 	default:
 		return
 	}	
 }
 
-func CreateTailwindCSS(dir string, frontend prompt.FrontEndResponse) {
+func CreateTailwindCSS(dir string, frontend prompt_fb.FrontEndResponse) {
 	path:=dir+"/frontend"
 	error := os.MkdirAll(path, os.ModePerm)
 	if error != nil {
@@ -43,7 +43,7 @@ func CreateTailwindCSS(dir string, frontend prompt.FrontEndResponse) {
 		return
 	}
 
-	if(frontend==prompt.ReactJS){
+	if(frontend==prompt_fb.ReactJS){
 		viteTmplPath := "internal/templates/tailwindcss/react/vite.config.tmpl"
 		viteTmpl,err:=template.ParseFiles(viteTmplPath)
 		if err != nil {

@@ -1,4 +1,4 @@
-package prompt
+package prompt_monorepo
 
 import (
 	"fmt"
