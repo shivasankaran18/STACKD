@@ -32,16 +32,18 @@ func Scaffold() {
 			orm := prompt.AskORM()
 			if orm != prompt.Orms_None {
 				dbType = prompt.AskDatabaseType()
-				dbURL = prompt.AskDatabaseURL()
+				dbURL = prompt.AskDatabaseURL(dbType)
 			}
 			auth = prompt_fb.AskAuth()
 		}
 
 		executors.CreateDirectories(dir)
-		executors_fb.CreateFrontend(dir, frontend)
-		if frontend != prompt_fb.Frontend_None {
-			executors_fb.CreateUI(dir, ui, frontend)
-		}
+		go func() {
+			executors_fb.CreateFrontend(dir, frontend)
+			if frontend != prompt_fb.Frontend_None {
+				executors_fb.CreateUI(dir, ui, frontend)
+			}
+		}()
 		executors_fb.CreateBackend(dir, backend)
 		if backend != prompt_fb.Backend_None && orm != prompt.Orms_None {
 			executors_fb.CreateORM(dir, orm, dbURL, dbType)
@@ -55,16 +57,14 @@ func Scaffold() {
 		auth := prompt_fullstack.AskAuth()
 		orm := prompt.AskORM()
 		dbType := prompt.AskDatabaseType()
-		dbURL := prompt.AskDatabaseURL()
+		dbURL := prompt.AskDatabaseURL(dbType)
 
 		executors.CreateDirectories(dir)
 		executors_fullstack.CreateFullStack(dir, fullStack)
 
-
 		if auth != prompt_fullstack.Auth_None {
 			executors_fullstack.CreateAuth(dir, auth)
 		}
-
 
 		if orm != prompt.Orms_None {
 			executors_fullstack.CreateORM(dir, orm, dbURL, dbType)

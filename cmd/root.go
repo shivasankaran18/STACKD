@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/common-nighthawk/go-figure"
 	"github.com/spf13/cobra"
 	"github.com/shivasankaran18/STACKD/internal"
 )
@@ -42,8 +41,14 @@ func init() {
 }
 
 func printBanner() {
-	fig := figure.NewFigure("STACKD", "", true)
-	banner := fig.String()
+	banner := `
+     ██████╗████████╗ █████╗  ██████╗██╗  ██╗'██████╗ 
+    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝██╔══██╗
+    ╚█████╗    ██║   ███████║██║     █████═╝ ██║  ██║
+     ╚═══██╗   ██║   ██╔══██║██║     ██╔═██╗ ██║  ██║
+    ██████╔╝   ██║   ██║  ██║╚██████╗██║  ██╗██████╔╝
+    ╚═════╝    ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═════╝ 
+`	
 
 	bannerStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#00FA9A")).Bold(true).Align(lipgloss.Center).Padding(1, 2)
 	styledBanner := bannerStyle.Render(banner)
@@ -55,11 +60,8 @@ func printBanner() {
 	divider := dividerStyle.Render("\n" + "="+string(make([]rune, 50))+"=" + "\n")
 	divider = dividerStyle.Render("\n==================================================\n")
 
-	promptStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#A9A9F5")).Bold(true)
-	prompt := promptStyle.Render("\u2714\ufe0f Choose your preferred interface: ") + lipgloss.NewStyle().Foreground(lipgloss.Color("#4682B4")).Bold(true).Render("CLI Interface")
 
 	fmt.Println(styledBanner)
 	fmt.Println(desc)
 	fmt.Println(divider)
-	fmt.Println(prompt)
 }

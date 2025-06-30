@@ -11,7 +11,7 @@ func CreateMonoRepo(dir string, monoRepo prompt_monorepo.MonoRepoResponse) {
 	switch monoRepo {
 	case prompt_monorepo.Turborepo:
 		CreateTurbo(dir)
-	case prompt_monorepo.MonoRepo_None:
+	case prompt_monorepo.Monorepo_None:
 		return
 	default:
 		return

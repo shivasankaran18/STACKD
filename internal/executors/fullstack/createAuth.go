@@ -1,13 +1,14 @@
 package executors_fullstack
 
 import (
-	prompt_fullstack "github.com/shivasankaran18/STACKD/internal/prompt/fullstack"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"text/template"
-	"log"
+
+	prompt_fullstack "github.com/shivasankaran18/STACKD/internal/prompt/fullstack"
 )
 
 func CreateAuth(dir string, auth prompt_fullstack.AuthResponse) {
@@ -23,14 +24,14 @@ func CreateAuth(dir string, auth prompt_fullstack.AuthResponse) {
 }
 
 func CreateNextAuth(dir string) {
-	var path string =dir
-	error := os.MkdirAll(path+"app/api/auth/[...nextauth]", os.ModePerm)
+	var path string = dir
+	error := os.MkdirAll(path+"/app/api/auth/[...nextauth]", os.ModePerm)
 	if error != nil {
 		fmt.Println("Error creating [...nextauth] directory:", error)
 		os.Exit(1)
 		return
 	}
-	command:=exec.Command("npm", "install", "next-auth")
+	command := exec.Command("npm", "install", "next-auth")
 	command.Dir = path
 	err := command.Run()
 	if err != nil {
@@ -45,7 +46,8 @@ func CreateNextAuth(dir string) {
 		os.Exit(1)
 		return
 	}
-	f, err := os.Create(filepath.Join(path, "app", "api", "auth", "[...nextauth]", "route.ts"))
+	var nextAuthPath string = path + "/app/api/auth/[...nextauth]"
+	f, err := os.Create(nextAuthPath + "/route.ts")
 	if err != nil {
 		fmt.Println("Error creating route.ts file:", err)
 		os.Exit(1)
@@ -58,5 +60,5 @@ func CreateNextAuth(dir string) {
 		os.Exit(1)
 		return
 	}
-	
+
 }
