@@ -1,5 +1,4 @@
-package prompt_fullstack
-
+package promptfb
 import (
 	"fmt"
 	"os"
@@ -8,14 +7,15 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type FullStackResponse string
+type FrontEndResponse string
 
 const (
-	NextJs FullStackResponse = "Next.js"
-	Django FullStackResponse = "Django"
+	ReactJS       FrontEndResponse = "React (JavaScript)"
+	ReactTS       FrontEndResponse = "React (TypeScript)"
+	Frontend_None FrontEndResponse = "None"
 )
 
-type FullStackModel struct {
+type frontendModel struct {
 	cursor   int
 	choices  []string
 	selected bool
@@ -23,11 +23,11 @@ type FullStackModel struct {
 	cancel   bool
 }
 
-func (m FullStackModel) Init() tea.Cmd {
+func (m frontendModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m FullStackModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m frontendModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -35,9 +35,13 @@ func (m FullStackModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cancel = true
 			return m, tea.Quit
 		case "up", "k":
-			m.cursor--
+			if m.cursor > 0 {
+				m.cursor--
+			}
 		case "down", "j":
-			m.cursor++
+			if m.cursor < len(m.choices)-1 {
+				m.cursor++
+			}
 		case "enter":
 			m.selected = true
 			m.result = m.choices[m.cursor]
@@ -47,7 +51,7 @@ func (m FullStackModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m FullStackModel) View() string {
+func (m frontendModel) View() string {
 	labelStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("14")).Bold(true).Background(lipgloss.Color("0")).Padding(0, 1)
 	optionStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("7")).Padding(0, 2)
 	selectedStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("15")).Background(lipgloss.Color("12")).Bold(true).Padding(0, 2).Border(lipgloss.RoundedBorder(), true).BorderForeground(lipgloss.Color("12"))
@@ -57,7 +61,7 @@ func (m FullStackModel) View() string {
 	if m.selected {
 		return labelStyle.MarginTop(0).Render("You chose:") + "\n" + selectedStyle.Render(m.result) + "\n" + lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Render("Press q to quit.")
 	}
-	out := labelStyle.Render("🎨 Choose a Full Stack Framework") + "\n\n"
+	out := labelStyle.Render("🎨 Choose a Frontend Framework") + "\n\n"
 	var options string
 	for i, choice := range m.choices {
 		cursor := "  "
@@ -74,12 +78,13 @@ func (m FullStackModel) View() string {
 	return out
 }
 
-func AskFullStack() FullStackResponse {
-	fullStackOptions := []string{
-		string(NextJs),
-		string(Django),
+func AskFrontend() FrontEndResponse {
+	frontendOptions := []string{
+		string(ReactJS),
+		string(ReactTS),
+		string(Frontend_None),
 	}
-	m := FullStackModel{choices: fullStackOptions}
+	m := frontendModel{choices: frontendOptions}
 	p := tea.NewProgram(m)
 	finalModel, err := p.Run()
 	if err != nil {
@@ -89,11 +94,12 @@ func AskFullStack() FullStackResponse {
 	}
 	if m.cancel {
 		os.Exit(1)
-		return ""
+		return Frontend_None
 	}
-	mod := finalModel.(FullStackModel)
+	mod := finalModel.(frontendModel)
 	if mod.selected {
-		return FullStackResponse(mod.result)
+		return FrontEndResponse(mod.result)
 	}
-	return ""
+	return Frontend_None
 }
+

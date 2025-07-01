@@ -1,5 +1,4 @@
-package prompt_fb
-
+package promptfb
 import (
 	"fmt"
 	"os"
@@ -103,3 +102,4 @@ func AskBackend() BackendResponse {
 	}
 	return Backend_None
 }
+

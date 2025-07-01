@@ -1,34 +1,32 @@
-package prompt_fb
+package promptfb
 
 import(
-	"fmt"
-	"os"
-
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"fmt"
+	"os"
 )
 
-type UIResponse string
+type AuthResponse string
 
 const (
-	TailwindCSS UIResponse = "TailwindCSS"
-	ShadCN UIResponse = "TailwindCSS + ShadCN"
-	UI_None UIResponse = "None"
+	JWT AuthResponse = "JWT"
+	Auth_None AuthResponse = "None"
 )
 
-type uiModel struct {
-	cursor   int
-	choices  []string
+type authModel struct {
+	cursor int
+	choices []string
 	selected bool
-	result   string
-	cancel   bool
+	result string
+	cancel bool
 }
 
-func (m uiModel) Init() tea.Cmd {
+func (m authModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m uiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m authModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -52,17 +50,17 @@ func (m uiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m uiModel) View() string {
-	labelStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("13")).Bold(true).Background(lipgloss.Color("0")).Padding(0, 1)
+func (m authModel) View() string {
+	labelStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("11")).Bold(true).Background(lipgloss.Color("0")).Padding(0, 1)
 	optionStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("7")).Padding(0, 2)
-	selectedStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("15")).Background(lipgloss.Color("13")).Bold(true).Padding(0, 2).Border(lipgloss.RoundedBorder(), true).BorderForeground(lipgloss.Color("13"))
-	borderStyle := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("13")).Padding(1, 2)
+	selectedStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("0")).Background(lipgloss.Color("11")).Bold(true).Padding(0, 2).Border(lipgloss.RoundedBorder(), true).BorderForeground(lipgloss.Color("11"))
+	borderStyle := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("11")).Padding(1, 2)
 	bgStyle := lipgloss.NewStyle().Background(lipgloss.Color("0"))
 
 	if m.selected {
 		return labelStyle.Render("You chose:") + "\n" + selectedStyle.Render(m.result) + "\n"
 	}
-	out := labelStyle.Render("🎨 Choose a UI Framework") + "\n\n"
+	out := labelStyle.Render("🔒 Choose an Authentication Method") + "\n\n"
 	var options string
 	for i, choice := range m.choices {
 		cursor := "  "
@@ -79,27 +77,31 @@ func (m uiModel) View() string {
 	return out
 }
 
-func AskUI() UIResponse {
-	uiOptions := []string{
-		string(TailwindCSS),
-		string(ShadCN),
-		string(UI_None),
+func AskAuth() AuthResponse {
+	authOptions := []string{
+		string(JWT),
+		string(Auth_None),
 	}
-	m := uiModel{choices: uiOptions}
-	p := tea.NewProgram(m)
+	model := authModel{
+		cursor: 0,
+		choices: authOptions,
+		selected: false,
+	}
+	p := tea.NewProgram(model)
 	finalModel, err := p.Run()
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
 		os.Exit(1)
 		return ""
 	}
-	mod := finalModel.(uiModel)
+	mod := finalModel.(authModel)
 	if mod.cancel {
 		os.Exit(1)
 		return ""
 	}
 	if mod.selected {
-		return UIResponse(mod.result)
+		return AuthResponse(mod.result)
 	}
-	return UI_None
+	return Auth_None
 }
+

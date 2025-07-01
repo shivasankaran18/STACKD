@@ -1,21 +1,21 @@
-package executors_fb
+package executorsfb
 
 import (
 	"fmt"
 	"os"
 	"os/exec"
 
-	prompt_fb "github.com/shivasankaran18/STACKD/internal/prompt/fb"
+	"github.com/shivasankaran18/STACKD/internal/fb/promptfb"
 )
 
-func CreateFrontend(dir string, frontend prompt_fb.FrontEndResponse) {
+func CreateFrontend(dir string, frontend promptfb.FrontEndResponse) {
 
 	switch frontend {
-	case prompt_fb.ReactJS:
+	case promptfb.ReactJS:
 		CreateReactJS(dir)
-	case prompt_fb.ReactTS:
+	case promptfb.ReactTS:
 		CreateReactTS(dir)
-	case prompt_fb.Frontend_None:
+	case promptfb.Frontend_None:
 		return
 	default:
 		return
@@ -23,14 +23,14 @@ func CreateFrontend(dir string, frontend prompt_fb.FrontEndResponse) {
 }
 
 func CreateReactJS(dir string) {
-	var path string= dir+"/frontend"
-	error:=os.MkdirAll(path, os.ModePerm)
+	var path string = dir + "/frontend"
+	error := os.MkdirAll(path, os.ModePerm)
 	if error != nil {
 		fmt.Println("Error creating frontend directory:", error)
 		os.Exit(1)
 		return
 	}
-	command :=exec.Command("npm","create","vite@latest",dir+"/frontend","--","--template","react")
+	command := exec.Command("npm", "create", "vite@latest", dir+"/frontend", "--", "--template", "react")
 
 	err := command.Run()
 	if err != nil {
@@ -40,7 +40,7 @@ func CreateReactJS(dir string) {
 
 }
 func CreateReactTS(dir string) {
-	command :=exec.Command("npm","create","vite@latest",dir+"/frontend","--","--template","react-ts")
+	command := exec.Command("npm", "create", "vite@latest", dir+"/frontend", "--", "--template", "react-ts")
 
 	err := command.Run()
 	if err != nil {

@@ -1,4 +1,4 @@
-package executors_fullstack
+package executorsfs
 
 import (
 	"fmt"
@@ -8,15 +8,16 @@ import (
 	"path/filepath"
 	"text/template"
 
-	prompt_fullstack "github.com/shivasankaran18/STACKD/internal/prompt/fullstack"
+	"github.com/shivasankaran18/STACKD/internal/fs/promptfs"
+	"github.com/shivasankaran18/STACKD/internal/templates"
 )
 
-func CreateAuth(dir string, auth prompt_fullstack.AuthResponse) {
+func CreateAuth(dir string, auth promptfs.AuthResponse) {
 	switch auth {
 
-	case prompt_fullstack.NextAuth:
+	case promptfs.NextAuth:
 		CreateNextAuth(dir)
-	case prompt_fullstack.Auth_None:
+	case promptfs.Auth_None:
 		return
 	default:
 		return
@@ -39,8 +40,8 @@ func CreateNextAuth(dir string) {
 		os.Exit(1)
 		return
 	}
-	nextAuthTmplPath := filepath.Join("internal/templates/nextjs", "nextauth.tmpl")
-	nextAuthTmpl, err := template.ParseFiles(nextAuthTmplPath)
+	nextAuthTmplPath := filepath.Join("nextjs", "nextauth.tmpl")
+	nextAuthTmpl, err := template.ParseFS(templates.NextAuthTemplates, nextAuthTmplPath)
 	if err != nil {
 		log.Println("Error parsing nextauth.tmpl template:", err)
 		os.Exit(1)
@@ -62,3 +63,4 @@ func CreateNextAuth(dir string) {
 	}
 
 }
+

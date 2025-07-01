@@ -1,31 +1,30 @@
-package executors_fb
-
+package executorsfb
 import (
 	"fmt"
 	"os"
 	"os/exec"
 	"text/template"
+	"embed"
 
-	prompt_fb "github.com/shivasankaran18/STACKD/internal/prompt/fb"
+	"github.com/shivasankaran18/STACKD/internal/fb/promptfb"
 )
 
 
-func CreateUI(dir string, ui prompt_fb.UIResponse,frontend prompt_fb.FrontEndResponse) {
+func CreateUI(dir string, ui promptfb.UIResponse,frontend promptfb.FrontEndResponse) {
 	switch ui {
-	case prompt_fb.TailwindCSS:
+	case promptfb.TailwindCSS:
 		CreateTailwindCSS(dir,frontend)
-		break
-	case prompt_fb.ShadCN:
+	case promptfb.ShadCN:
 		//CreateShadCN(dir)
 		break
-	case prompt_fb.UI_None:
+	case promptfb.UI_None:
 		return
 	default:
 		return
 	}	
 }
 
-func CreateTailwindCSS(dir string, frontend prompt_fb.FrontEndResponse) {
+func CreateTailwindCSS(dir string, frontend promptfb.FrontEndResponse) {
 	path:=dir+"/frontend"
 	error := os.MkdirAll(path, os.ModePerm)
 	if error != nil {
@@ -43,9 +42,10 @@ func CreateTailwindCSS(dir string, frontend prompt_fb.FrontEndResponse) {
 		return
 	}
 
-	if(frontend==prompt_fb.ReactJS){
+	if(frontend==promptfb.ReactJS){
 		viteTmplPath := "internal/templates/tailwindcss/react/vite.config.tmpl"
-		viteTmpl,err:=template.ParseFiles(viteTmplPath)
+		var viteTemplates embed.FS
+		viteTmpl, err := template.ParseFS(viteTemplates, viteTmplPath)
 		if err != nil {
 			fmt.Println("Error parsing vite.config.js template:", err)
 			os.Exit(1)
@@ -67,7 +67,8 @@ func CreateTailwindCSS(dir string, frontend prompt_fb.FrontEndResponse) {
 		}
 
 		indexCssTmplPath:="internal/templates/tailwindcss/react/index.css.tmpl"
-		indexCssTmpl,err:=template.ParseFiles(indexCssTmplPath);
+		var indexCssTemplates embed.FS
+		indexCssTmpl, err := template.ParseFS(indexCssTemplates, indexCssTmplPath)
 		if err != nil {
 			fmt.Println("Error parsing index.css template:", err)
 			os.Exit(1)
@@ -91,3 +92,4 @@ func CreateTailwindCSS(dir string, frontend prompt_fb.FrontEndResponse) {
 
 	}
 }
+

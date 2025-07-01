@@ -1,4 +1,4 @@
-package executors_fb
+package executorsfb
 
 import (
 	"fmt"
@@ -7,26 +7,27 @@ import (
 	"path/filepath"
 	"text/template"
 	"log"
+	"github.com/shivasankaran18/STACKD/internal/fb/promptfb"
+	"github.com/shivasankaran18/STACKD/internal/templates"
 
-	prompt_fb "github.com/shivasankaran18/STACKD/internal/prompt/fb"
 )
 
-func CreateAuth(dir string, auth prompt_fb.AuthResponse, backend prompt_fb.BackendResponse) {
+func CreateAuth(dir string, auth promptfb.AuthResponse, backend promptfb.BackendResponse) {
 	switch auth {
-	case prompt_fb.JWT:
+	case promptfb.JWT:
 		CreateJWT(dir, backend)
-	case prompt_fb.Auth_None:
+	case promptfb.Auth_None:
 		return
 	default:
 		return
 	}
 }
 
-func CreateJWT(dir string, backend prompt_fb.BackendResponse) {
+func CreateJWT(dir string, backend promptfb.BackendResponse) {
 	switch backend {
-	case prompt_fb.ExpressJS:
+	case promptfb.ExpressJS:
 		CreateJWTExpressJS(dir)
-	case prompt_fb.ExpressTS:
+	case promptfb.ExpressTS:
 		CreateJWTExpressTS(dir)
 	default:
 		return
@@ -50,8 +51,8 @@ func CreateJWTExpressJS(dir string) {
 		return
 	}
 
-	jwtTmplPath := filepath.Join("internal/templates/expressjs", "jwt.tmpl")
-	jwtTmpl, err := template.ParseFiles(jwtTmplPath)
+	jwtTmplPath := filepath.Join("expressjs", "jwt.tmpl")
+	jwtTmpl, err := template.ParseFS(templates.JwtJSTemplates, jwtTmplPath)
 	if err != nil {
 		log.Println("Error parsing jwt.tmpl template:", err)
 		os.Exit(1)
@@ -98,8 +99,8 @@ func CreateJWTExpressTS(dir string) {
 		return
 	}
 
-	jwtTmplPath := filepath.Join("internal/templates/expressts", "jwt.tmpl")
-	jwtTmpl, err := template.ParseFiles(jwtTmplPath)
+	jwtTmplPath := filepath.Join("expressts", "jwt.tmpl")
+	jwtTmpl,err := template.ParseFS(templates.JwtTSTemplates, jwtTmplPath)
 	if err != nil {
 		log.Println("Error parsing jwt.tmpl template:", err)
 		os.Exit(1)
@@ -119,5 +120,6 @@ func CreateJWTExpressTS(dir string) {
 		return
 	}
 }
+
 
 

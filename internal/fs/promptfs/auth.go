@@ -1,6 +1,5 @@
-package prompt_fb
-
-import(
+package promptfs
+import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"fmt"
@@ -10,7 +9,7 @@ import(
 type AuthResponse string
 
 const (
-	JWT AuthResponse = "JWT"
+	NextAuth AuthResponse = "NextAuth"
 	Auth_None AuthResponse = "None"
 )
 
@@ -56,7 +55,7 @@ func (m authModel) View() string {
 	selectedStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("0")).Background(lipgloss.Color("11")).Bold(true).Padding(0, 2).Border(lipgloss.RoundedBorder(), true).BorderForeground(lipgloss.Color("11"))
 	borderStyle := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("11")).Padding(1, 2)
 	bgStyle := lipgloss.NewStyle().Background(lipgloss.Color("0"))
-
+	
 	if m.selected {
 		return labelStyle.Render("You chose:") + "\n" + selectedStyle.Render(m.result) + "\n"
 	}
@@ -79,15 +78,11 @@ func (m authModel) View() string {
 
 func AskAuth() AuthResponse {
 	authOptions := []string{
-		string(JWT),
+		string(NextAuth),
 		string(Auth_None),
 	}
-	model := authModel{
-		cursor: 0,
-		choices: authOptions,
-		selected: false,
-	}
-	p := tea.NewProgram(model)
+	m := authModel{choices: authOptions}
+	p := tea.NewProgram(m)
 	finalModel, err := p.Run()
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
@@ -104,3 +99,4 @@ func AskAuth() AuthResponse {
 	}
 	return Auth_None
 }
+

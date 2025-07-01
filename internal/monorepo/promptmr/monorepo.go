@@ -1,65 +1,52 @@
-package prompt
-
+package promptmr
 import (
 	"fmt"
 	"os"
 
-	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
-type DbTypeResponse string
+type MonoRepoResponse string
 
 const (
-	Postgres DbTypeResponse = "postgresql"
-	MySQL    DbTypeResponse = "mysql"
-	MongoDB  DbTypeResponse = "mongodb"
-	DB_None  DbTypeResponse = "NoDB"
+	Turborepo MonoRepoResponse = "Turborepo"
+	Monorepo_None MonoRepoResponse = "None"
 )
-type dbTypeModel struct {
-	input textinput.Model
-	cancel bool
-	cursor int
-	choices []string
+
+type monorepoModel struct {
+	cursor   int
+	choices  []string
 	selected bool
-	result string
+	result   string
+	cancel   bool
 }
 
-
-
-func (m dbTypeModel) Init() tea.Cmd {
+func (m monorepoModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m dbTypeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m monorepoModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q", "esc":
+		case "ctrl+c", "q":
 			m.cancel = true
 			return m, tea.Quit
+		case "up", "k":
+			m.cursor--
+		case "down", "j":
+			m.cursor++
 		case "enter":
 			m.selected = true
 			m.result = m.choices[m.cursor]
 			return m, tea.Quit
-		
-		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
-			}
-		case "down", 	"j":
-			if m.cursor < len(m.choices)-1 {
-				m.cursor++
-			}
 		}
-
 	}
-
 	return m, nil
 }
 
-func (m dbTypeModel) View() string {
+func (m monorepoModel) View() string {
 	labelStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("14")).Bold(true).Background(lipgloss.Color("0")).Padding(0, 1)
 	optionStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("7")).Padding(0, 2)
 	selectedStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("15")).Background(lipgloss.Color("12")).Bold(true).Padding(0, 2).Border(lipgloss.RoundedBorder(), true).BorderForeground(lipgloss.Color("12"))
@@ -67,15 +54,14 @@ func (m dbTypeModel) View() string {
 	bgStyle := lipgloss.NewStyle().Background(lipgloss.Color("0"))
 
 	if m.selected {
-		return labelStyle.Render("You chose:") + "\n" + selectedStyle.Render(m.result) + "\n"
+		return labelStyle.MarginTop(0).Render("You chose:") + "\n" + selectedStyle.Render(m.result) + "\n" + lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Render("Press q to quit.")
 	}
-	out := labelStyle.Render("💾 Choose a Database Type") + "\n\n"
-
+	out := labelStyle.Render("🎨 Choose a Monorepo Framework") + "\n\n"
 	var options string
 	for i, choice := range m.choices {
 		cursor := "  "
 		style := optionStyle
-		if m.cursor == i {
+		if m.cursor==i {
 			cursor = "> "
 			style = selectedStyle
 		}
@@ -83,28 +69,32 @@ func (m dbTypeModel) View() string {
 	}
 	list := borderStyle.Render(options)
 	out += bgStyle.Render(list)
-	out += "\n" + lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Render("Press q to quit.")
+out += "\n" + lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Render("Press q to quit.")
 	return out
 }
 
-func AskDatabaseType() DbTypeResponse {
-	dbTypeOptions := []string{
-		string(Postgres),
-		string(MySQL),
-		string(MongoDB),
-		string(DB_None),
+func AskMonoRepo() MonoRepoResponse{
+	monorepoOptions := []string{
+		string(Turborepo),
+		string(Monorepo_None),
 	}
-	m := dbTypeModel{choices: dbTypeOptions}
-	p := tea.NewProgram(m)
+	m := monorepoModel{choices:monorepoOptions}
+	p:=tea.NewProgram(m)
 	finalModel, err := p.Run()
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error running program: %v\n", err)
 		os.Exit(1)
-		return ""
+		return Monorepo_None
+
 	}
-	mod := finalModel.(dbTypeModel)
-	if mod.selected {
-		return DbTypeResponse(mod.result)
+	if m.cancel {
+		os.Exit(1)
+		return Monorepo_None
 	}
-	return DB_None
+	mod := finalModel.(monorepoModel)
+	if mod.selected{
+		return MonoRepoResponse(mod.result)
+	}
+	return Monorepo_None
 }
+

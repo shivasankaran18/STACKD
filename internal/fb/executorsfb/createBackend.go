@@ -1,5 +1,4 @@
-package executors_fb
-
+package executorsfb
 import (
 	"fmt"
 	"log"
@@ -7,17 +6,21 @@ import (
 	"os/exec"
 	"path/filepath"
 	"text/template"
+	"github.com/shivasankaran18/STACKD/internal/fb/promptfb"
 
-	prompt_fb "github.com/shivasankaran18/STACKD/internal/prompt/fb"
+	"github.com/shivasankaran18/STACKD/internal/templates"
+
 )
 
-func CreateBackend(dir string, backend prompt_fb.BackendResponse) {
+
+
+func CreateBackend(dir string, backend promptfb.BackendResponse) {
 	switch backend {
-	case prompt_fb.ExpressJS:
+	case promptfb.ExpressJS:
 		CreateExpressJS(dir)
-	case prompt_fb.ExpressTS:
+	case promptfb.ExpressTS:
 		CreateExpressTS(dir)
-	case prompt_fb.Backend_None:
+	case promptfb.Backend_None:
 		return
 	default:
 		return
@@ -52,9 +55,10 @@ func CreateExpressJS(dir string) {
 		return
 	}
 
-	indexTmplPath := filepath.Join("internal/templates/expressjs", "index.js.tmpl")
+	indexTmplPath := filepath.Join("expressjs", "index.js.tmpl")
+	fmt.Println("indexTmplPath:", indexTmplPath)
+	indexTmpl, err := template.ParseFS(templates.IndexJSTemplates, indexTmplPath)
 
-	indexTmpl, err := template.ParseFiles(indexTmplPath)
 	if err != nil {
 		log.Println("Error parsing index.js template:", err)
 		os.Exit(1)
@@ -136,8 +140,8 @@ func CreateExpressTS(dir string) {
 		return
 	}
 
-	indexTmplPath := filepath.Join("internal/templates/expressts", "index.ts.tmpl")
-	indexTmpl, err := template.ParseFiles(indexTmplPath)
+	indexTmplPath := filepath.Join("expressts", "index.ts.tmpl")
+	indexTmpl, err := template.ParseFS(templates.IndexTSTemplates, indexTmplPath)
 	if err != nil {
 		log.Println("Error parsing index.ts template:", err)
 		os.Exit(1)
@@ -158,3 +162,4 @@ func CreateExpressTS(dir string) {
 	}
 
 }
+

@@ -1,17 +1,16 @@
-package executors_fullstack
-
+package executorsfs
 import (
 	"log"
 	"os/exec"
+	"github.com/shivasankaran18/STACKD/internal/fs/promptfs"
 
-	prompt_fullstack "github.com/shivasankaran18/STACKD/internal/prompt/fullstack"
 )
 
-func CreateFullStack(dir string, fullstack prompt_fullstack.FullStackResponse) {
+func CreateFullStack(dir string, fullstack promptfs.FullStackResponse) {
 	switch fullstack {
-	case prompt_fullstack.NextJs:
+	case promptfs.NextJs:
 		CreateNext(dir)
-	case prompt_fullstack.Django:
+	case promptfs.Django:
 		//CreateDjango(dir)
 	default:
 		log.Println("No full stack framework selected")
@@ -31,3 +30,4 @@ func CreateNext(dir string){
 	log.Println("Next.js project created successfully at", dir)
 
 }
+

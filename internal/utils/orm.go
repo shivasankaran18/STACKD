@@ -1,32 +1,33 @@
-package prompt_fullstack
+package utils
 
 import (
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"fmt"
 	"os"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
-type AuthResponse string
-
+type ORMResponse string
 const (
-	NextAuth AuthResponse = "NextAuth"
-	Auth_None AuthResponse = "None"
+	Prisma ORMResponse = "Prisma"
+	Drizzle  ORMResponse = "Drizzle ORM"
+	Orms_None ORMResponse = "None"
 )
 
-type authModel struct {
-	cursor int
-	choices []string
+type ormModel struct {
+	cursor   int
+	choices  []string
 	selected bool
-	result string
-	cancel bool
+	result   string
+	cancel   bool
 }
 
-func (m authModel) Init() tea.Cmd {
+func (m ormModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m authModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m ormModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -50,17 +51,17 @@ func (m authModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m authModel) View() string {
-	labelStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("11")).Bold(true).Background(lipgloss.Color("0")).Padding(0, 1)
+func (m ormModel) View() string {
+	labelStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("5")).Bold(true).Background(lipgloss.Color("0")).Padding(0, 1)
 	optionStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("7")).Padding(0, 2)
-	selectedStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("0")).Background(lipgloss.Color("11")).Bold(true).Padding(0, 2).Border(lipgloss.RoundedBorder(), true).BorderForeground(lipgloss.Color("11"))
-	borderStyle := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("11")).Padding(1, 2)
+	selectedStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("15")).Background(lipgloss.Color("5")).Bold(true).Padding(0, 2).Border(lipgloss.RoundedBorder(), true).BorderForeground(lipgloss.Color("5"))
+	borderStyle := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("5")).Padding(1, 2)
 	bgStyle := lipgloss.NewStyle().Background(lipgloss.Color("0"))
-	
+
 	if m.selected {
 		return labelStyle.Render("You chose:") + "\n" + selectedStyle.Render(m.result) + "\n"
 	}
-	out := labelStyle.Render("🔒 Choose an Authentication Method") + "\n\n"
+	out := labelStyle.Render("📦 Choose an ORM") + "\n\n"
 	var options string
 	for i, choice := range m.choices {
 		cursor := "  "
@@ -77,12 +78,13 @@ func (m authModel) View() string {
 	return out
 }
 
-func AskAuth() AuthResponse {
-	authOptions := []string{
-		string(NextAuth),
-		string(Auth_None),
+func AskORM() ORMResponse {
+	ormOptions := []string{
+		string(Prisma),
+		string(Drizzle),
+		string(Orms_None),
 	}
-	m := authModel{choices: authOptions}
+	m := ormModel{choices: ormOptions}
 	p := tea.NewProgram(m)
 	finalModel, err := p.Run()
 	if err != nil {
@@ -90,13 +92,13 @@ func AskAuth() AuthResponse {
 		os.Exit(1)
 		return ""
 	}
-	mod := finalModel.(authModel)
+	mod := finalModel.(ormModel)
 	if mod.cancel {
 		os.Exit(1)
 		return ""
 	}
 	if mod.selected {
-		return AuthResponse(mod.result)
+		return ORMResponse(mod.result)
 	}
-	return Auth_None
-}
+	return Orms_None
+}	

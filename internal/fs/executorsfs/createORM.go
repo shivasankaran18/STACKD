@@ -1,4 +1,4 @@
-package executors_fullstack
+package executorsfs
 
 import (
 	"fmt"
@@ -7,23 +7,24 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/shivasankaran18/STACKD/internal/prompt"
+	"github.com/shivasankaran18/STACKD/internal/templates"
+	"github.com/shivasankaran18/STACKD/internal/utils"
 )
 
-func CreateORM(dir string, orm prompt.ORMResponse, dbURL string, dbType prompt.DbTypeResponse) {
+func CreateORM(dir string, orm utils.ORMResponse, dbURL string, dbType utils.DbTypeResponse) {
 	switch orm {
-	case prompt.Prisma:
+	case utils.Prisma:
 		CreatePrisma(dir, dbURL, dbType)
-	case prompt.Drizzle:
+	case utils.Drizzle:
 		//CreateDrizzle(dir, dbURL, dbType)
-	case prompt.Orms_None:
+	case utils.Orms_None:
 		return
 	default:
 		return
 	}
 }
 
-func CreatePrisma(dir string, dbURL string, dbType prompt.DbTypeResponse) {
+func CreatePrisma(dir string, dbURL string, dbType utils.DbTypeResponse) {
 	path := dir
 	error := os.MkdirAll(path+"/prisma", os.ModePerm)
 	if error != nil {
@@ -39,8 +40,8 @@ func CreatePrisma(dir string, dbURL string, dbType prompt.DbTypeResponse) {
 		os.Exit(1)
 		return
 	}
-	prismaTemplPath := filepath.Join("internal/templates/prisma", "prisma.tmpl")
-	prismaTmpl, err := template.ParseFiles(prismaTemplPath)
+	prismaTemplPath := filepath.Join("prisma", "schema.tmpl")
+	prismaTmpl, err := template.ParseFS(templates.PrismaTemplates, prismaTemplPath)
 	if err != nil {
 		fmt.Println("Error parsing Prisma template:", err)
 		os.Exit(1)
@@ -69,8 +70,8 @@ func CreatePrisma(dir string, dbURL string, dbType prompt.DbTypeResponse) {
 		return
 	}
 	defer f.Close()
-	envTemplPath := filepath.Join("internal/templates/prisma", "env.tmpl")
-	envTmpl, err := template.ParseFiles(envTemplPath)
+	envTemplPath := filepath.Join("prisma", "env.tmpl")
+	envTmpl, err := template.ParseFS(templates.EnvTemplates, envTemplPath)
 	if err != nil {
 		fmt.Println("Error parsing Prisma template:", err)
 		os.Exit(1)
@@ -94,3 +95,4 @@ func CreatePrisma(dir string, dbURL string, dbType prompt.DbTypeResponse) {
 	}
 
 }
+
