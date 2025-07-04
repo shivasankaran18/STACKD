@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"text/template"
 
 	"github.com/shivasankaran18/STACKD/internal/fs/promptfs"
@@ -40,7 +39,7 @@ func CreateNextAuth(dir string) {
 		os.Exit(1)
 		return
 	}
-	nextAuthTmplPath := filepath.Join("nextjs", "nextauth.tmpl")
+	nextAuthTmplPath := "nextjs/nextauth.tmpl"
 	nextAuthTmpl, err := template.ParseFS(templates.NextAuthTemplates, nextAuthTmplPath)
 	if err != nil {
 		log.Println("Error parsing nextauth.tmpl template:", err)
