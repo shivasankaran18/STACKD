@@ -51,8 +51,7 @@ func CreateJWTExpressJS(dir string) {
 		return
 	}
 
-	jwtTmplPath := "expressjs/jwt.tmpl"
-	jwtTmpl, err := template.ParseFS(templates.JwtJSTemplates, jwtTmplPath)
+	jwtTmpl,err:=template.New("jwt.js").Parse(templates.JwtJSTemplates)
 	if err != nil {
 		log.Println("Error parsing jwt.tmpl template:", err)
 		os.Exit(1)
@@ -99,8 +98,7 @@ func CreateJWTExpressTS(dir string) {
 		return
 	}
 
-	jwtTmplPath := "expressts/jwt.tmpl"
-	jwtTmpl,err := template.ParseFS(templates.JwtTSTemplates, jwtTmplPath)
+	jwtTmpl,err:=template.New("jwt.ts").Parse(templates.JwtTSTemplates)
 	if err != nil {
 		log.Println("Error parsing jwt.tmpl template:", err)
 		os.Exit(1)

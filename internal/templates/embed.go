@@ -1,26 +1,29 @@
 package templates
 
-import "embed"
+import (
+
+	_ "embed"
+)
 
 //go:embed expressjs/index.js.tmpl
-var IndexJSTemplates embed.FS
+var IndexJSTemplates string
 
 
 //go:embed expressts/index.ts.tmpl
-var IndexTSTemplates embed.FS
+var IndexTSTemplates string
 
 //go:embed expressjs/jwt.tmpl
-var JwtJSTemplates embed.FS
+var JwtJSTemplates string
 
 //go:embed expressts/jwt.tmpl
-var JwtTSTemplates embed.FS
+var JwtTSTemplates string
 
 //go:embed prisma/schema.tmpl
-var PrismaTemplates embed.FS
+var PrismaTemplates string
 
 //go:embed prisma/env.tmpl
-var EnvTemplates embed.FS
+var EnvTemplates string
 
 //go:embed nextjs/nextauth.tmpl
-var NextAuthTemplates embed.FS
+var NextAuthTemplates string
 

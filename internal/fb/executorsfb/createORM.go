@@ -39,9 +39,7 @@ func CreatePrisma(dir string,dbURL string, dbType utils.DbTypeResponse){
 		os.Exit(1)
 		return
 	}
-	prismaTemplPath := "prisma/schema.tmpl"
-	
-	prismaTmpl, err := template.ParseFS(templates.PrismaTemplates,prismaTemplPath)
+	prismaTmpl,err:=template.New("schema.prisma").Parse(templates.PrismaTemplates)
 	if err != nil {
 		fmt.Println("Error parsing Prisma template:", err)
 		os.Exit(1)
@@ -82,9 +80,8 @@ func CreatePrisma(dir string,dbURL string, dbType utils.DbTypeResponse){
 	fmt.Println("Creating .env file at", file)
 	defer f.Close()
 
-	envTemplPath := "prisma/env.tmpl"
-
-	envTmpl, err := template.ParseFS(templates.EnvTemplates, envTemplPath)
+	envTmpl, err := template.New("env").Parse(templates.EnvTemplates)
+	//envTmpl, err := template.ParseFS(templates.EnvTemplates, envTemplPath)
 	fmt.Println(f);
 	fmt.Println(envTmpl)
 	err = envTmpl.Execute(f,map[string]string{

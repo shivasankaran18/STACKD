@@ -55,8 +55,7 @@ func CreateExpressJS(dir string) {
 		return
 	}
 
-	indexTmplPath := "expressjs/index.js.tmpl";
-	indexTmpl, err := template.ParseFS(templates.IndexJSTemplates, indexTmplPath)
+	indexTmpl, err := template.New("index.js").Parse(templates.IndexJSTemplates)
 
 	if err != nil {
 		log.Println("Error parsing index.js template:", err)
@@ -139,8 +138,7 @@ func CreateExpressTS(dir string) {
 		return
 	}
 
-	indexTmplPath := "expressts/index.ts.tmpl"
-	indexTmpl, err := template.ParseFS(templates.IndexTSTemplates, indexTmplPath)
+	indexTmpl,err:=template.New("index.ts").Parse(templates.IndexTSTemplates)
 	if err != nil {
 		log.Println("Error parsing index.ts template:", err)
 		os.Exit(1)

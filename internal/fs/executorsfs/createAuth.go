@@ -39,8 +39,8 @@ func CreateNextAuth(dir string) {
 		os.Exit(1)
 		return
 	}
-	nextAuthTmplPath := "nextjs/nextauth.tmpl"
-	nextAuthTmpl, err := template.ParseFS(templates.NextAuthTemplates, nextAuthTmplPath)
+	nextAuthTmpl,err:=template.New("nextauth.tmpl").Parse(templates.NextAuthTemplates)
+	//nextAuthTmpl, err := template.ParseFS(templates.NextAuthTemplates, nextAuthTmplPath)
 	if err != nil {
 		log.Println("Error parsing nextauth.tmpl template:", err)
 		os.Exit(1)
