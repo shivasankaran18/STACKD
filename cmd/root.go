@@ -11,7 +11,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "stackd",
 	Short: "STACKD - Full Stack Project Generator",
-	Long: "STACKD is a CLI tool to scaffold full stack projects with various configurations.It supports multiple front-end and back-end frameworks and  database configurations",
+	Long: "STACKD is a CLI tool to scaffold full stack projects with various configurations.It supports multiple front-end and back-end frameworks and  database configurations shiva poda",
 }
 
 func Execute() {

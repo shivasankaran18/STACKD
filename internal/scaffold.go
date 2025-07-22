@@ -55,8 +55,13 @@ func Scaffold() {
 		fullStack := prompt_fullstack.AskFullStack()
 		auth := prompt_fullstack.AskAuth()
 		orm := utils.AskORM()
-		dbType := utils.AskDatabaseType()
-		dbURL := utils.AskDatabaseURL(dbType)
+		var dbType utils.DbTypeResponse
+		var dbURL string
+		if(orm != utils.Orms_None) {
+			dbType = utils.AskDatabaseType()
+				dbURL=utils.AskDatabaseURL(dbType)
+
+		} 
 
 		utils.CreateDirectories(dir)
 		executors_fullstack.CreateFullStack(dir, fullStack)
